@@ -1,0 +1,18 @@
+services:
+  python-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"  # Сервер для статических файлов
+    volumes:
+      - .:/app  # Монтируем текущую директорию в контейнер
+
+  react-app:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.react
+    ports:
+      - "3000:3000"  # React приложение на порту 3000
+    depends_on:
+      - python-app
