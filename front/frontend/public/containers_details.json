@@ -10,7 +10,7 @@
         "2": {
             "name": "ЧелГУ",
             "description": "Челябинский государственный",
-            "fill_level": "50%",
+            "fill_level": "20%",
             "rating": 4.0,
             "image": "/images/chelgu.jpg"
         },

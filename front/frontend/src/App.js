@@ -6,12 +6,26 @@ import L from 'leaflet'; // Импортируем Leaflet
 // Импортируем CSS Leaflet для использования стандартных стилей и иконок
 import 'leaflet/dist/leaflet.css';
 
-// Переопределение пути к иконкам (если они не загружаются)
-delete L.Icon.Default.prototype._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: require('leaflet/dist/images/marker-icon-2x.png'), // Путь к retina-иконке
-  iconUrl: require('leaflet/dist/images/marker-icon.png'),         // Путь к обычной иконке
-  shadowUrl: require('leaflet/dist/images/marker-shadow.png'),    // Путь к тени иконки
+// Создаем кастомные иконки для разных уровней заполненности
+const greenIcon = new L.Icon({
+  iconUrl: '/images/green_marker.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [0, -41]
+});
+
+const yellowIcon = new L.Icon({
+  iconUrl: '/images/yellow_marker.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [0, -41]
+});
+
+const redIcon = new L.Icon({
+  iconUrl: '/images/red_marker.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [0, -41]
 });
 
 function App() {
@@ -22,7 +36,27 @@ function App() {
     // Загрузка координат мусорок
     axios.get('http://localhost:8000/containers_coordinates.json')
       .then((response) => {
-        setContainers(response.data.containers);
+        const coordinates = response.data.containers;
+
+        // Загрузка деталей мусорок
+        return axios.get('http://localhost:8000/containers_details.json').then((detailsResponse) => {
+          const details = detailsResponse.data.containers;
+
+          // Объединяем данные о координатах и деталях
+          const enrichedContainers = coordinates.map((coord) => {
+            const detail = details[coord.id];
+            return {
+              ...coord,
+              fill_level: detail?.fill_level || "0%", // Добавляем fill_level из details
+              name: detail?.name || "Неизвестное место", // Добавляем название для удобства
+            };
+          });
+
+          setContainers(enrichedContainers);
+        });
+      })
+      .catch((error) => {
+        console.error("Ошибка при загрузке данных:", error);
       });
   }, []);
 
@@ -84,12 +118,34 @@ function App() {
               eventHandlers={{
                 click: () => loadDetails(container.id),
               }}
+              icon={getIconByFillLevel(container.fill_level)} // Определяем цвет по fill_level
             />
           ))}
         </MapContainer>
       </div>
     </div>
   );
+}
+
+// Функция для выбора иконки по заполненности
+function getIconByFillLevel(fillLevel) {
+  let fillLevelNumber;
+
+  // Если fillLevel — строка, убираем символ '%'
+  if (typeof fillLevel === 'string') {
+    fillLevelNumber = parseFloat(fillLevel.replace('%', ''));
+  } else {
+    // Если fillLevel уже число
+    fillLevelNumber = fillLevel;
+  }
+
+  if (fillLevelNumber <= 30) {
+    return greenIcon;
+  } else if (fillLevelNumber <= 70) {
+    return yellowIcon;
+  } else {
+    return redIcon;
+  }
 }
 
 export default App;
