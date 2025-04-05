@@ -5,10 +5,10 @@ import L from 'leaflet'; // Импортируем Leaflet
 import MarkerClusterGroup from 'react-leaflet-markercluster'; // Добавляем импорт
 
 // Импортируем CSS Leaflet для использования стандартных стилей и иконок
-//import 'leaflet/dist/leaflet.css';
+import 'leaflet/dist/leaflet.css';
 
-//import 'leaflet.markercluster/dist/MarkerCluster.css';
-//import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
+import 'leaflet.markercluster/dist/MarkerCluster.css';
+import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 
 // Создаем кастомные иконки для разных уровней заполненности
 const greenIcon = new L.Icon({
