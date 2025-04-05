@@ -1,8 +1,8 @@
 services:
   python-app:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: front
+      dockerfile: front/Dockerfile
     ports:
       - "8000:8000"
     volumes:
@@ -10,8 +10,8 @@ services:
 
   react-app:
     build:
-      context: ./frontend
-      dockerfile: Dockerfile.react
+      context: front/frontend
+      dockerfile: front/frontend/Dockerfile.react
     ports:
       - "3000:3000"
     depends_on:

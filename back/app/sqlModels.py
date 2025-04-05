@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from sqlalchemy import Column, ForeignKey, Integer, Table, Text, create_engine
+from sqlalchemy import Column, ForeignKey, Integer, Table, Text, create_engine, Float
 from sqlalchemy.orm import Mapped, declarative_base, mapped_column, relationship, sessionmaker
 from sqlalchemy.orm.base import Mapped
 
@@ -32,8 +32,8 @@ class Platform(Base):
 
     platform_id = mapped_column(Integer, primary_key=True)
     address = mapped_column(Text)
-    longitude = mapped_column(Integer)
-    latitude = mapped_column(Text)
+    longitude = mapped_column(Float)
+    latitude = mapped_column(Float)
 
     platform_comment: Mapped['PlatformComment'] = relationship('PlatformComment', back_populates='platform')
 

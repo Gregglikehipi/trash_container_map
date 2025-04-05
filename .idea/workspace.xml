@@ -4,11 +4,17 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="1febe7fe-e22f-46c8-9b32-97db2f2f9bda" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/back/crud.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/back/main.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/back/sqlModels.py" afterDir="false" />
+    <list default="true" id="1febe7fe-e22f-46c8-9b32-97db2f2f9bda" name="Changes" comment="add: readme.txt">
+      <change afterPath="$PROJECT_DIR$/back/Dockerfile" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/back/app/main.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/back/app/pydanticModels.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/back/crud.py" beforeDir="false" afterPath="$PROJECT_DIR$/back/app/crud.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/back/main.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/back/platforms.db" beforeDir="false" afterPath="$PROJECT_DIR$/back/app/platforms.db" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/back/pydanticModels.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/back/sqlModels.py" beforeDir="false" afterPath="$PROJECT_DIR$/back/app/sqlModels.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/front/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose.yml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -19,6 +25,7 @@
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="Python Script" />
+        <option value="Dockerfile" />
       </list>
     </option>
   </component>
@@ -46,16 +53,20 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Python.sqlModels.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "master"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Python.sqlModels.executor&quot;: &quot;Run&quot;,
+    &quot;Python.test.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="D:\Проги\trash_container_map" />
+      <recent name="D:\Проги\trash_container_map\back\app" />
+      <recent name="D:\Проги\trash_container_map\back\photo" />
       <recent name="D:\Проги\trash_container_map\back" />
     </key>
   </component>
@@ -75,6 +86,48 @@
       <option name="presentableId" value="Default" />
       <updated>1741149841289</updated>
     </task>
+    <task id="LOCAL-00001" summary="add: base of project">
+      <option name="closed" value="true" />
+      <created>1741964188243</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1741964188243</updated>
+    </task>
+    <task id="LOCAL-00002" summary="add: methods in crud">
+      <option name="closed" value="true" />
+      <created>1742620886153</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1742620886153</updated>
+    </task>
+    <task id="LOCAL-00003" summary="add: readme.txt">
+      <option name="closed" value="true" />
+      <created>1742620950249</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1742620950249</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="add: base of project" />
+    <MESSAGE value="add: methods in crud" />
+    <MESSAGE value="add: readme.txt" />
+    <option name="LAST_COMMIT_MESSAGE" value="add: readme.txt" />
   </component>
 </project>

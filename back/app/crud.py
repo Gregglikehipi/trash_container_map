@@ -1,4 +1,4 @@
-from sqlModels import *
+from app.sqlModels import *
 
 
 def create_platform(session, address, longitude, latitude):
