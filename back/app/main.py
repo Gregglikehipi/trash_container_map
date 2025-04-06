@@ -9,9 +9,22 @@ from app.pydanticModels import AllPlatforms
 from app.crud import create_platform
 from app.sqlModels import db_helper
 
+from fastapi.middleware.cors import CORSMiddleware
+
 app = FastAPI()
 
 info = {"platforms": [ {"id": 1, "address": "Ленина", "longitude": 55.148707, "latitude": 61.433685}, {"id": 2, "address": "Ленина", "longitude": 55.148707, "latitude": 61.333685}]}
+
+origins = ["*"]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 @app.get("/platforms")
 def get_platforms():
