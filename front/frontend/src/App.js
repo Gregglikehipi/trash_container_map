@@ -6,7 +6,6 @@ import MarkerClusterGroup from 'react-leaflet-markercluster'; // Добавля�
 
 // Импортируем CSS Leaflet для использования стандартных стилей и иконок
 import 'leaflet/dist/leaflet.css';
-
 import 'leaflet.markercluster/dist/MarkerCluster.css';
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 
@@ -33,33 +32,20 @@ const redIcon = new L.Icon({
 });
 
 function App() {
-  const [containers, setContainers] = useState([]);
-  const [selectedContainer, setSelectedContainer] = useState(null);
-  const [isPanelVisible, setIsPanelVisible] = useState(true); // Новое состояние для управления видимостью панели
-  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+  const [platforms, setPlatforms] = useState([]); // Состояние для хранения платформ
+  const [selectedPlatform, setSelectedPlatform] = useState(null); // Выбранная платформа
+  const [isPanelVisible, setIsPanelVisible] = useState(true); // Состояние видимости боковой панели
 
   useEffect(() => {
-    // Загрузка координат мусорок
-    axios.get(`${API_URL}/containers_coordinates.json`)
+    // Загрузка данных платформ с сервера
+    axios.get('http://python-app:8000/platforms.json') // Используем python-app внутри Docker
       .then((response) => {
-        const coordinates = response.data.containers;
-
-        // Загрузка деталей мусорок
-        return axios.get(`${API_URL}/containers_details.json`).then((detailsResponse) => {
-          const details = detailsResponse.data.containers;
-
-          // Объединяем данные о координатах и деталях
-          const enrichedContainers = coordinates.map((coord) => {
-            const detail = details[coord.id];
-            return {
-              ...coord,
-              fill_level: detail?.fill_level || "0%", // Добавляем fill_level из details
-              name: detail?.name || "Неизвестное место", // Добавляем название для удобства
-            };
-          });
-
-          setContainers(enrichedContainers);
-        });
+        const platformsData = response.data.platforms.map((platform) => ({
+          ...platform,
+          image: `/platform_photo/${platform.id}`, // Добавляем путь к изображению
+        }));
+        setPlatforms(platformsData);
+        setSelectedPlatform(null); // Сбрасываем выбранную платформу
       })
       .catch((error) => {
         console.error("Ошибка при загрузке данных:", error);
@@ -68,11 +54,11 @@ function App() {
 
   const loadDetails = async (id) => {
     try {
-      // Загрузка подробной информации о мусорке
-      const response = await axios.get('http://localhost:8000/containers_details.json');
-      const container = response.data.containers[id];
-      if (container) {
-        setSelectedContainer(container); // Устанавливаем выбранную мусорку
+      // Загрузка подробной информации о платформе
+      const response = await axios.get(`http://python-app:8000/platforms/${id}`); // Используем python-app внутри Docker
+      const platform = response.data;
+      if (platform) {
+        setSelectedPlatform(platform); // Устанавливаем выбранную платформу
         setIsPanelVisible(true); // Автоматически разворачиваем панель
       } else {
         alert('Детали не найдены');
@@ -83,8 +69,7 @@ function App() {
   };
 
   return (
-    <div className="App"
-    style={{ display: 'flex', height: '100%' }}>
+    <div style={{ display: 'flex', height: '100vh' }}>
       {/* Боковая панель */}
       {isPanelVisible ? (
         <div
@@ -106,7 +91,7 @@ function App() {
               background: '#007bff',
               color: 'white',
               border: 'none',
-              padding: '5px 5px',
+              padding: '5px 10px',
               cursor: 'pointer',
               borderRadius: '5px',
             }}
@@ -115,37 +100,35 @@ function App() {
             Свернуть
           </button>
 
-          {selectedContainer ? (
+          {selectedPlatform ? (
             <div>
-              <h2>{selectedContainer.name}</h2>
-              <p><strong>Описание:</strong> {selectedContainer.description}</p>
-              <p><strong>Заполненность:</strong> {selectedContainer.fill_level}</p>
-              <p><strong>Оценка:</strong> {selectedContainer.rating} ⭐</p>
+              <h2>{selectedPlatform.address}</h2>
+              <p><strong>Адрес:</strong> {selectedPlatform.address}</p>
+              <p><strong>Координаты:</strong> ({selectedPlatform.latitude}, {selectedPlatform.longitude})</p>
               {/* Отображение изображения */}
-              {selectedContainer.image && (
+              {selectedPlatform.image && (
                 <img
-                  src={selectedContainer.image}
-                  alt={selectedContainer.name}
+                  src={selectedPlatform.image}
+                  alt={selectedPlatform.address}
                   style={{ maxWidth: '100%', marginTop: '16px' }}
                 />
               )}
             </div>
           ) : (
-            <p>Выберите мусорку на карте</p>
+            <p>Выберите платформу на карте</p>
           )}
         </div>
       ) : (
         <button
           style={{
             position: 'absolute',
-            top: '5%',
-            left: '3%',
-            transform: 'translateY(-50%)',
+            top: '10px',
+            left: '10px',
             zIndex: 1000,
             background: '#007bff',
             color: 'white',
             border: 'none',
-            padding: '10px 20px',
+            padding: '5px 10px',
             cursor: 'pointer',
             borderRadius: '5px',
           }}
@@ -156,20 +139,30 @@ function App() {
       )}
 
       {/* Карта */}
-      <div style={{flex: 1, height: '100%'}}>
-        <MapContainer center={[55.143029, 61.386887]} zoom={12} style={{ height: '100vh' }}>
+      <div
+        className="map-container"
+        style={{
+          flex: isPanelVisible ? '1' : '1 1 100%',
+          height: '100%',
+        }}
+      >
+        <MapContainer
+          center={[55.143029, 61.386887]}
+          zoom={12}
+          style={{ width: '100%', height: '100%' }}
+        >
           <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
 
           {/* Группировка маркеров */}
           <MarkerClusterGroup>
-            {containers.map((container) => (
+            {platforms.map((platform) => (
               <Marker
-                key={container.id}
-                position={[container.latitude, container.longitude]}
+                key={platform.id}
+                position={[platform.latitude, platform.longitude]}
                 eventHandlers={{
-                  click: () => loadDetails(container.id),
+                  click: () => loadDetails(platform.id),
                 }}
-                icon={getIconByFillLevel(container.fill_level)} // Определяем цвет по fill_level
+                icon={getIconByFillLevel(platform.fill_level)} // Определяем цвет по fill_level
               />
             ))}
           </MarkerClusterGroup>
@@ -188,7 +181,7 @@ function getIconByFillLevel(fillLevel) {
     fillLevelNumber = parseFloat(fillLevel.replace('%', ''));
   } else {
     // Если fillLevel уже число
-    fillLevelNumber = fillLevel;
+    fillLevelNumber = fillLevel || 0; // По умолчанию 0%, если данные отсутствуют
   }
 
   if (fillLevelNumber <= 30) {
