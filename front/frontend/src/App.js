@@ -31,6 +31,8 @@ const redIcon = new L.Icon({
   popupAnchor: [0, -41]
 });
 
+const defaultIcon = greenIcon;
+
 function App() {
   const [platforms, setPlatforms] = useState([]); // Состояние для хранения платформ
   const [selectedPlatform, setSelectedPlatform] = useState(null); // Выбранная платформа
@@ -41,14 +43,13 @@ function App() {
   useEffect(() => {
     // Загрузка данных платформ с сервера
     axios.get(`${backendUrl}/platforms`)
-      
       .then((response) => {
-       
         const platformsData = response.data.platforms.map((platform) => ({
           ...platform,
           image: `${backendUrl}/platform_photo/${platform.id}`, // Добавляем путь к изображению
         }));
         setPlatforms(platformsData);
+        console.log('Платформы:', platformsData); // Проверяем данные
         setSelectedPlatform(null); // Сбрасываем выбранную платформу
       })
       .catch((error) => {
@@ -59,7 +60,9 @@ function App() {
   const loadDetails = async (id) => {
     try {
       // Загрузка подробной информации о платформе
-      const response = await axios.get(`${backendUrl}/platform_info/${id}`);
+      const response = await axios.get(`${backendUrl}/platform_info/${id}`, {
+        params: { item_id: id } // Передаем параметр item_id
+      });
       const platform = response.data;
       if (platform) {
         setSelectedPlatform(platform); // Устанавливаем выбранную платформу
@@ -68,6 +71,7 @@ function App() {
         alert('Детали не найдены');
       }
     } catch (error) {
+      console.error("Ошибка при загрузке деталей:", error);
       alert('Ошибка при загрузке деталей');
     }
   };
@@ -126,8 +130,8 @@ function App() {
         <button
           style={{
             position: 'absolute',
-            top: '10px',
-            left: '10px',
+            top: '5%',
+            left: '3%',
             zIndex: 1000,
             background: '#007bff',
             color: 'white',
@@ -151,7 +155,7 @@ function App() {
         }}
       >
         <MapContainer
-          center={[55.143029, 61.386887]}
+          center={[55.148707, 61.433685]}
           zoom={12}
           style={{ width: '100%', height: '100%' }}
         >
@@ -162,7 +166,7 @@ function App() {
             {platforms.map((platform) => (
               <Marker
                 key={platform.id}
-                position={[platform.latitude, platform.longitude]}
+                position={[platform.longitude, platform.latitude]}
                 eventHandlers={{
                   click: () => loadDetails(platform.id),
                 }}

@@ -1,12 +1,16 @@
 services:
   python-app:
+    container_name: python-app
     build:
-      context: ./front
+      context: ./back
       dockerfile: Dockerfile
+    restart: on-failure
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     ports:
       - "8000:8000"
-    volumes:
-      - ./front:/app
+    networks:
+      - app-network
 
   react-app:
     container_name: react-app
@@ -17,3 +21,11 @@ services:
       - "3000:80"
     depends_on:
       - python-app
+    networks:
+      - app-network
+    links: 
+      - python-app
+
+networks:
+  app-network:
+    driver: bridge
