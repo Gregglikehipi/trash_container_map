@@ -36,13 +36,17 @@ function App() {
   const [selectedPlatform, setSelectedPlatform] = useState(null); // Выбранная платформа
   const [isPanelVisible, setIsPanelVisible] = useState(true); // Состояние видимости боковой панели
 
+  const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8000';
+
   useEffect(() => {
     // Загрузка данных платформ с сервера
-    axios.get('http://python-app:8000/platforms.json') // Используем python-app внутри Docker
+    axios.get(`${backendUrl}/platforms`)
+      
       .then((response) => {
+       
         const platformsData = response.data.platforms.map((platform) => ({
           ...platform,
-          image: `/platform_photo/${platform.id}`, // Добавляем путь к изображению
+          image: `${backendUrl}/platform_photo/${platform.id}`, // Добавляем путь к изображению
         }));
         setPlatforms(platformsData);
         setSelectedPlatform(null); // Сбрасываем выбранную платформу
@@ -55,7 +59,7 @@ function App() {
   const loadDetails = async (id) => {
     try {
       // Загрузка подробной информации о платформе
-      const response = await axios.get(`http://python-app:8000/platforms/${id}`); // Используем python-app внутри Docker
+      const response = await axios.get(`${backendUrl}/platform_info/${id}`);
       const platform = response.data;
       if (platform) {
         setSelectedPlatform(platform); // Устанавливаем выбранную платформу
