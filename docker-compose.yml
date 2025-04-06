@@ -1,14 +1,15 @@
 services:
   python-app:
+    container_name: python-app
     build:
-      context: ./front
+      context: ./back
       dockerfile: Dockerfile
+    restart: on-failure
     ports:
-      - "8000:8000"
-    volumes:
-      - ./front:/app
+      - "127.0.0.1:8000:8000"
 
   react-app:
+    container_name: react-app
     build:
       context: ./front/frontend
       dockerfile: Dockerfile.react
