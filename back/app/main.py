@@ -1,7 +1,8 @@
 from typing import Union, Annotated
 
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, File, UploadFile
 from fastapi.responses import FileResponse
+from ultralytics import YOLO
 
 from sqlalchemy.orm import Session
 
@@ -25,6 +26,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+model = YOLO("app/my_model.pt")
 
 @app.get("/platforms")
 def get_platforms():
@@ -34,7 +36,8 @@ def get_platforms():
 
 @app.get("/platform_photo/{platform_id}")
 def read_platform_photo(platform_id: int):
-    return FileResponse(path=f"app/photo/{platform_id}.jpg")
+    result = model(f"app/photo/{platform_id}.jpg")
+    return result
 
 
 @app.get("/platform_info/{id}")
