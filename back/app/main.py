@@ -37,7 +37,7 @@ def get_platforms():
 @app.get("/platform_photo/{platform_id}")
 def read_platform_photo(platform_id: int):
     result = model(f"app/photo/{platform_id}.jpg")
-    return result
+    return result[0].show()
 
 
 @app.get("/platform_info/{id}")
