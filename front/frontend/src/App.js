@@ -61,11 +61,21 @@ function App() {
     try {
       // Загрузка подробной информации о платформе
       const response = await axios.get(`${backendUrl}/platform_info/${id}`, {
-        params: { item_id: id } // Передаем параметр item_id
+        params: { item_id: id } 
       });
       const platform = response.data;
       if (platform) {
-        setSelectedPlatform(platform); // Устанавливаем выбранную платформу
+        // Дополнительный запрос к /platform_photo/{platform_id}
+        const imageResponse = await axios.get(`${backendUrl}/platform_photo/${id}`, { responseType: 'blob' });
+        // Создаем URL для изображения
+        const imageUrl = URL.createObjectURL(imageResponse.data);
+        // Обновляем платформу с изображением
+        const updatedPlatform = {
+          ...platform,
+          image: imageUrl,
+        };
+  
+        setSelectedPlatform(updatedPlatform); // Устанавливаем выбранную платформу
         setIsPanelVisible(true); // Автоматически разворачиваем панель
       } else {
         alert('Детали не найдены');
