@@ -1,9 +1,0 @@
-{
-    "containers": [
-        {"id": "1", "latitude": 55.143029, "longitude": 61.386887},
-        {"id": "2", "latitude": 55.176527, "longitude": 61.318831},
-        {"id": "3", "latitude": 55.161331, "longitude": 61.354171},
-        {"id": "4", "latitude": 55.146230, "longitude": 61.379964},
-        {"id": "5", "latitude": 55.180690, "longitude": 61.377645}
-    ]
-}

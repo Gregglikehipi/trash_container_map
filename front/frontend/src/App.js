@@ -131,7 +131,7 @@ function App() {
           style={{
             position: 'absolute',
             top: '5%',
-            left: '3%',
+            left: '5%',
             zIndex: 1000,
             background: '#007bff',
             color: 'white',
