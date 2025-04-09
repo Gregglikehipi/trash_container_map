@@ -1,15 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, Marker } from 'react-leaflet';
 import axios from 'axios';
-import L from 'leaflet'; // Импортируем Leaflet
-import MarkerClusterGroup from 'react-leaflet-markercluster'; // Добавляем импорт
+import L from 'leaflet'; 
+import MarkerClusterGroup from 'react-leaflet-markercluster'; 
 
-// Импортируем CSS Leaflet для использования стандартных стилей и иконок
 import 'leaflet/dist/leaflet.css';
 import 'leaflet.markercluster/dist/MarkerCluster.css';
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 
-// Создаем кастомные иконки для разных уровней заполненности
 const greenIcon = new L.Icon({
   iconUrl: '/images/green_marker.png',
   iconSize: [25, 41],
@@ -34,9 +32,9 @@ const redIcon = new L.Icon({
 const defaultIcon = greenIcon;
 
 function App() {
-  const [platforms, setPlatforms] = useState([]); // Состояние для хранения платформ
-  const [selectedPlatform, setSelectedPlatform] = useState(null); // Выбранная платформа
-  const [isPanelVisible, setIsPanelVisible] = useState(true); // Состояние видимости боковой панели
+  const [platforms, setPlatforms] = useState([]); 
+  const [selectedPlatform, setSelectedPlatform] = useState(null); 
+  const [isPanelVisible, setIsPanelVisible] = useState(true);
 
   const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8000';
 
@@ -46,11 +44,11 @@ function App() {
       .then((response) => {
         const platformsData = response.data.platforms.map((platform) => ({
           ...platform,
-          image: `${backendUrl}/platform_photo/${platform.id}`, // Добавляем путь к изображению
+          image: `${backendUrl}/platform_photo/${platform.id}`, 
         }));
         setPlatforms(platformsData);
-        console.log('Платформы:', platformsData); // Проверяем данные
-        setSelectedPlatform(null); // Сбрасываем выбранную платформу
+        console.log('Платформы:', platformsData); 
+        setSelectedPlatform(null); 
       })
       .catch((error) => {
         console.error("Ошибка при загрузке данных:", error);
@@ -61,12 +59,19 @@ function App() {
     try {
       // Загрузка подробной информации о платформе
       const response = await axios.get(`${backendUrl}/platform_info/${id}`, {
-        params: { item_id: id } // Передаем параметр item_id
+        params: { item_id: id } 
       });
       const platform = response.data;
       if (platform) {
-        setSelectedPlatform(platform); // Устанавливаем выбранную платформу
-        setIsPanelVisible(true); // Автоматически разворачиваем панель
+        const imageResponse = await axios.get(`${backendUrl}/platform_photo/${id}`, { responseType: 'blob' });
+        const imageUrl = URL.createObjectURL(imageResponse.data);
+        const updatedPlatform = {
+          ...platform,
+          image: imageUrl,
+        };
+  
+        setSelectedPlatform(updatedPlatform); 
+        setIsPanelVisible(true); 
       } else {
         alert('Детали не найдены');
       }
@@ -170,7 +175,7 @@ function App() {
                 eventHandlers={{
                   click: () => loadDetails(platform.id),
                 }}
-                icon={getIconByFillLevel(platform.fill_level)} // Определяем цвет по fill_level
+                icon={getIconByFillLevel(platform.fill_level)} 
               />
             ))}
           </MarkerClusterGroup>
@@ -180,16 +185,13 @@ function App() {
   );
 }
 
-// Функция для выбора иконки по заполненности
 function getIconByFillLevel(fillLevel) {
   let fillLevelNumber;
 
-  // Если fillLevel — строка, убираем символ '%'
   if (typeof fillLevel === 'string') {
     fillLevelNumber = parseFloat(fillLevel.replace('%', ''));
   } else {
-    // Если fillLevel уже число
-    fillLevelNumber = fillLevel || 0; // По умолчанию 0%, если данные отсутствуют
+    fillLevelNumber = fillLevel || 0; 
   }
 
   if (fillLevelNumber <= 30) {
