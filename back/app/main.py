@@ -14,7 +14,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
-info = {"platforms": [ {"id": 1, "address": "Ленина", "longitude": 55.148707, "latitude": 61.433685}, {"id": 2, "address": "Ленина", "longitude": 55.148707, "latitude": 61.333685}]}
+info = {"platforms": [ {"id": 1, "address": "Ленина", "longitude": 55.148707, "latitude": 61.433685}, {"id": 2, "address": "Ленина", "longitude": 55.148707, "latitude": 61.333685}, {"id": 3, "address": "Ленина", "longitude": 55.148707, "latitude": 61.533685},]}
 
 origins = ["*"]
 
