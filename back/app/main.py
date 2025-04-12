@@ -14,7 +14,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
-info = {"platforms": [ {"id": 1, "address": "Ленина", "longitude": 55.148707, "latitude": 61.433685}, {"id": 2, "address": "Ленина", "longitude": 55.148707, "latitude": 61.333685}]}
+info = {"platforms": [ {"id": 1, "address": "Ленина", "longitude": 55.148707, "latitude": 61.433685, "status": "red"}, {"id": 2, "address": "Ленина", "longitude": 55.148707, "latitude": 61.333685, "status": "yellow"}, {"id": 3, "address": "Ленина", "longitude": 55.148707, "latitude": 61.533685, "status": "green"}]}
 
 origins = ["*"]
 
@@ -46,7 +46,7 @@ def read_platform_info(item_id: int, q: Union[str, None] = None):
 
 
 @app.post("/platform_info/{id}")
-def read_item(item_id: int, q: Union[str, None] = None):
+def post_comment(item_id: int, q: Union[str, None] = None):
     return {"item_id": item_id, "q": q}
 
 @app.get("/test")
