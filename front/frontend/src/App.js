@@ -8,6 +8,7 @@ import 'leaflet/dist/leaflet.css';
 import 'leaflet.markercluster/dist/MarkerCluster.css';
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 
+// Определение иконок
 const greenIcon = new L.Icon({
   iconUrl: '/images/green_marker.png',
   iconSize: [25, 41],
@@ -28,8 +29,6 @@ const redIcon = new L.Icon({
   iconAnchor: [12, 41],
   popupAnchor: [0, -41]
 });
-
-const defaultIcon = greenIcon;
 
 function App() {
   const [platforms, setPlatforms] = useState([]); 
@@ -78,6 +77,20 @@ function App() {
     } catch (error) {
       console.error("Ошибка при загрузке деталей:", error);
       alert('Ошибка при загрузке деталей');
+    }
+  };
+
+  // Функция для выбора иконки на основе статуса
+  const getIconByStatus = (status) => {
+    switch (status) {
+      case 'green':
+        return greenIcon;
+      case 'yellow':
+        return yellowIcon;
+      case 'red':
+        return redIcon;
+      default:
+        return greenIcon;
     }
   };
 
@@ -171,11 +184,11 @@ function App() {
             {platforms.map((platform) => (
               <Marker
                 key={platform.id}
-                position={[platform.longitude, platform.latitude]}
+                position={[platform.latitude, platform.longitude]}
                 eventHandlers={{
                   click: () => loadDetails(platform.id),
                 }}
-                icon={getIconByFillLevel(platform.fill_level)} 
+                icon={getIconByStatus(platform.status)} // Используем новую функцию
               />
             ))}
           </MarkerClusterGroup>
@@ -183,24 +196,6 @@ function App() {
       </div>
     </div>
   );
-}
-
-function getIconByFillLevel(fillLevel) {
-  let fillLevelNumber;
-
-  if (typeof fillLevel === 'string') {
-    fillLevelNumber = parseFloat(fillLevel.replace('%', ''));
-  } else {
-    fillLevelNumber = fillLevel || 0; 
-  }
-
-  if (fillLevelNumber <= 30) {
-    return greenIcon;
-  } else if (fillLevelNumber <= 70) {
-    return yellowIcon;
-  } else {
-    return redIcon;
-  }
 }
 
 export default App;
