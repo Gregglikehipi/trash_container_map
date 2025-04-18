@@ -1,4 +1,8 @@
 from app.sqlModels import *
+from sqlModels import *
+import time
+import pandas as pd
+from back.app.sqlModels import PlatformComment
 
 
 def create_platform(session, address, longitude, latitude):
@@ -34,3 +38,67 @@ def delete_platform(session, platform_id):
 
     else:
         print(f"Пользователь с ID {platform_id} не найден.")
+
+
+def create_comment(session, platform_id: int, text: str, date: int = None):
+    platform = session.query(Platform).filter_by(platform_id=platform_id).first()
+    if not platform:
+        raise ValueError(f"Платформа с ID {platform_id} не найдена")
+
+    new_comment = PlatformComment(
+        platform_id=platform_id,
+        text=text,
+        date=int(time.time())
+    )
+    session.add(new_comment)
+    return new_comment
+
+def read_comments(session, platform_id: int):
+    return session.query(PlatformComment).filter_by(platform_id=platform_id).all()
+
+def read_comment(session, comment_id: int):
+    return session.query(PlatformComment).filter_by(comment_id=comment_id).first()
+
+def update_comment(session, comment_id: int, new_text: str):
+    comment = session.query(PlatformComment).filter_by(comment_id=comment_id).first()
+    if comment:
+        comment.text = new_text
+        comment.date = int(time.time())
+    else:
+        raise ValueError(f"Комментарий с ID {comment_id} не найден")
+    return comment
+
+def delete_comment(session, comment_id: int):
+    comment = session.query(PlatformComment).filter_by(comment_id=comment_id).first()
+    if comment:
+        session.delete(comment)
+    else:
+        raise ValueError(f"Комментарий с ID {comment_id} не найден")
+    return True
+
+
+def import_excel_to_db():
+    df = pd.read_excel('Выгрузка.xlsx', usecols=['Наименование', 'Долгота', 'Широта'])
+
+    df['Долгота'] = df['Долгота'].astype(str).str.replace(',', '.').astype(float)
+    df['Широта'] = df['Широта'].astype(str).str.replace(',', '.').astype(float)
+
+    session = db_helper.session_make()
+
+    try:
+        session.query(Platform).delete()
+
+        for _, row in df.iterrows():
+            platform = Platform(
+                address=row['Наименование'],
+                longitude=row['Долгота'],
+                latitude=row['Широта']
+            )
+            session.add(platform)
+
+        session.commit()
+    except Exception as e:
+        session.rollback()
+        raise e
+    finally:
+        session.close()
