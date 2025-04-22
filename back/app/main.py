@@ -36,8 +36,14 @@ def get_platforms():
 
 @app.get("/platform_photo/{platform_id}")
 def read_platform_photo(platform_id: int):
-    result = model(f"app/photo/{platform_id}.jpg")
-    return result[0].show()
+    image_path = f"app/photo/{platform_id}.jpg"
+    results = model(image_path)
+
+    # Save result image with bounding boxes
+    result_img_path = f"app/photo/annotated_{platform_id}.jpg"
+    results[0].save(filename=result_img_path)
+
+    return FileResponse(result_img_path, media_type="image/jpeg")
 
 
 @app.get("/platform_info/{id}")

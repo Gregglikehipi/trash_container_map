@@ -5,6 +5,7 @@ class Platform(BaseModel):
     address: str
     longitude: float
     latitude: float
+    status: str
 
 class AllPlatforms(BaseModel):
     platforms: list[Platform]
