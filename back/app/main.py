@@ -2,7 +2,7 @@ from typing import Union, Annotated
 
 from fastapi import FastAPI, Depends, File, UploadFile
 from fastapi.responses import FileResponse
-from ultralytics import YOLO
+# from ultralytics import YOLO
 
 from sqlalchemy.orm import Session
 
@@ -26,24 +26,29 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-model = YOLO("app/my_model.pt")
+# model = YOLO("app/my_model.pt")
 
 @app.get("/platforms")
 def get_platforms():
     text = AllPlatforms(**info)
     return text
 
-
+"""
 @app.get("/platform_photo/{platform_id}")
 def read_platform_photo(platform_id: int):
     image_path = f"app/photo/{platform_id}.jpg"
     results = model(image_path)
 
-    # Save result image with bounding boxes
     result_img_path = f"app/photo/annotated_{platform_id}.jpg"
     results[0].save(filename=result_img_path)
 
     return FileResponse(result_img_path, media_type="image/jpeg")
+"""
+
+
+@app.get("/platform_photo/{platform_id}")
+def read_platform_photo(platform_id: int):
+    return FileResponse(path=f"app/photo/{platform_id}.jpg")
 
 
 @app.get("/platform_info/{id}")
