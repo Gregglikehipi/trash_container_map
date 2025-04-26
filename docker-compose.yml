@@ -5,11 +5,11 @@ services:
       context: ./back
       dockerfile: Dockerfile
     restart: on-failure
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - capabilities: [ gpu ]
+    #deploy:
+    #  resources:
+    #    reservations:
+    #      devices:
+    #        - capabilities: [ gpu ]
     environment:
       NVIDIA_VISIBLE_DEVICES: all
     extra_hosts:
