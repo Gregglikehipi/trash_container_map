@@ -6,14 +6,13 @@ from fastapi.responses import FileResponse
 
 from sqlalchemy.orm import Session
 
-from app.pydanticModels import AllPlatforms
-from app.crud import create_platform
-from app.sqlModels import db_helper
 from fastapi import HTTPException
 
 from fastapi.middleware.cors import CORSMiddleware
 
-from back.app.sqlModels import PlatformComment
+from back.app.crud import create_platform, import_excel_to_db
+from back.app.pydanticModels import AllPlatforms
+from back.app.sqlModels import PlatformComment, db_helper
 
 app = FastAPI()
 
@@ -98,3 +97,11 @@ def delete_comment(comment_id: int, session: Session = Depends(db_helper.get_db)
         return {"detail": "Комментарий удален"}
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
+
+@app.post("/import-excel")
+def import_excel_data():
+    try:
+        import_excel_to_db()
+        return {"status": "success", "message": "Data imported successfully"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
