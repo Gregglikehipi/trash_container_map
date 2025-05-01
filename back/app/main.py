@@ -12,7 +12,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from back.app.crud import create_platform, import_excel_to_db
 from back.app.pydanticModels import AllPlatforms
-from back.app.sqlModels import PlatformComment, db_helper
+from back.app.sqlModels import PlatformComment, db_helper, Platform
 
 app = FastAPI()
 
@@ -30,10 +30,27 @@ app.add_middleware(
 
 # model = YOLO("app/my_model.pt")
 
-@app.get("/platforms")
+"""@app.get("/platforms")
 def get_platforms():
     text = AllPlatforms(**info)
     return text
+"""
+
+@app.get("/platforms", response_model=AllPlatforms)
+def get_platforms(session: Session = Depends(db_helper.get_db)):
+    db_platforms = session.query(Platform).all()
+
+    return AllPlatforms(
+        platforms=[
+            Platform(
+                id=p.platform_id,
+                address=p.address,
+                longitude=p.longitude,
+                latitude=p.latitude,
+                status=p.status
+            ) for p in db_platforms
+        ]
+    )
 
 """
 @app.get("/platform_photo/{platform_id}")
