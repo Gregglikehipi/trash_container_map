@@ -4,8 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="1febe7fe-e22f-46c8-9b32-97db2f2f9bda" name="Changes" comment="add: readme.txt">
+    <list default="true" id="d77282d1-30db-4ade-934f-d728442595fc" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/trash_container_map.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/trash_container_map.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/back/app/crud.py" beforeDir="false" afterPath="$PROJECT_DIR$/back/app/crud.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/back/app/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/back/app/main.py" afterDir="false" />
@@ -15,55 +17,51 @@
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
-  <component name="FileTemplateManagerImpl">
-    <option name="RECENT_TEMPLATES">
-      <list>
-        <option value="Python Script" />
-        <option value="Dockerfile" />
-      </list>
-    </option>
-  </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="GitHubPullRequestSearchHistory">{
-  &quot;lastFilter&quot;: {
-    &quot;state&quot;: &quot;OPEN&quot;,
-    &quot;assignee&quot;: &quot;Gregglikehipi&quot;
-  }
-}</component>
-  <component name="GithubPullRequestsUISettings">{
-  &quot;selectedUrlAndAccountId&quot;: {
-    &quot;url&quot;: &quot;https://github.com/Gregglikehipi/trash_container_map.git&quot;,
-    &quot;accountId&quot;: &quot;096ceab0-c954-4202-935b-0c1324311781&quot;
-  }
-}</component>
   <component name="ProjectColorInfo">{
+  &quot;customColor&quot;: &quot;&quot;,
   &quot;associatedIndex&quot;: 1
 }</component>
-  <component name="ProjectId" id="2tsnqgf7hUm41UhoFduOSq8Ros5" />
-  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectId" id="2vumZhZf4aTwQ3G2nAwa6JNWcH0" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
-    "Python.sqlModels.executor": "Run",
-    "Python.test.executor": "Run",
+    "Python.main.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
     "git-widget-placeholder": "comments",
-    "settings.editor.selected.configurable": "preferences.pluginManager"
+    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable"
   }
 }]]></component>
-  <component name="RecentsManager">
-    <key name="MoveFile.RECENT_KEYS">
-      <recent name="D:\Проги\trash_container_map" />
-      <recent name="D:\Проги\trash_container_map\back\app" />
-      <recent name="D:\Проги\trash_container_map\back\photo" />
-      <recent name="D:\Проги\trash_container_map\back" />
-    </key>
+  <component name="RunManager">
+    <configuration name="container" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
+      <module name="trash_container_map" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="SDK_NAME" value="Python 3.13 virtualenv at D:\Институт\Учеба\Производственная практика\trash_container_map\.venv" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="container" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
   </component>
   <component name="SharedIndexes">
     <attachedChunks>
@@ -75,54 +73,12 @@
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
-      <changelist id="1febe7fe-e22f-46c8-9b32-97db2f2f9bda" name="Changes" comment="" />
-      <created>1741149841289</created>
+      <changelist id="d77282d1-30db-4ade-934f-d728442595fc" name="Changes" comment="" />
+      <created>1745003392387</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
-      <updated>1741149841289</updated>
+      <updated>1745003392387</updated>
     </task>
-    <task id="LOCAL-00001" summary="add: base of project">
-      <option name="closed" value="true" />
-      <created>1741964188243</created>
-      <option name="number" value="00001" />
-      <option name="presentableId" value="LOCAL-00001" />
-      <option name="project" value="LOCAL" />
-      <updated>1741964188243</updated>
-    </task>
-    <task id="LOCAL-00002" summary="add: methods in crud">
-      <option name="closed" value="true" />
-      <created>1742620886153</created>
-      <option name="number" value="00002" />
-      <option name="presentableId" value="LOCAL-00002" />
-      <option name="project" value="LOCAL" />
-      <updated>1742620886153</updated>
-    </task>
-    <task id="LOCAL-00003" summary="add: readme.txt">
-      <option name="closed" value="true" />
-      <created>1742620950249</created>
-      <option name="number" value="00003" />
-      <option name="presentableId" value="LOCAL-00003" />
-      <option name="project" value="LOCAL" />
-      <updated>1742620950249</updated>
-    </task>
-    <option name="localTasksCounter" value="4" />
     <servers />
-  </component>
-  <component name="Vcs.Log.Tabs.Properties">
-    <option name="TAB_STATES">
-      <map>
-        <entry key="MAIN">
-          <value>
-            <State />
-          </value>
-        </entry>
-      </map>
-    </option>
-  </component>
-  <component name="VcsManagerConfiguration">
-    <MESSAGE value="add: base of project" />
-    <MESSAGE value="add: methods in crud" />
-    <MESSAGE value="add: readme.txt" />
-    <option name="LAST_COMMIT_MESSAGE" value="add: readme.txt" />
   </component>
 </project>

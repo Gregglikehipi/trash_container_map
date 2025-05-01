@@ -1,4 +1,4 @@
-from app.sqlModels import *
+from back.app.sqlModels import *
 from sqlModels import *
 import time
 import pandas as pd
