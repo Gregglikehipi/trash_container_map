@@ -39,7 +39,10 @@ def delete_platform(session, platform_id):
     else:
         print(f"Пользователь с ID {platform_id} не найден.")
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> temp-branch
 def create_comment(session, platform_id: int, text: str, date: int = None):
     platform = session.query(Platform).filter_by(platform_id=platform_id).first()
     if not platform:
@@ -74,6 +77,7 @@ def delete_comment(session, comment_id: int):
         session.delete(comment)
     else:
         raise ValueError(f"Комментарий с ID {comment_id} не найден")
+<<<<<<< HEAD
     return True
 
 
@@ -102,3 +106,6 @@ def import_excel_to_db():
         raise e
     finally:
         session.close()
+=======
+    return True
+>>>>>>> temp-branch
