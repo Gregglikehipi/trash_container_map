@@ -1,7 +1,18 @@
-from pydantic import BaseModel
 from datetime import datetime
+from pydantic import BaseModel
+from typing import List
 
-class Platform(BaseModel):
+class PlatformBase(BaseModel):
+    class Config:
+        from_attributes = True
+
+class PlatformCreate(PlatformBase):
+    address: str
+    longitude: float
+    latitude: float
+    status: str = "green"
+
+class PlatformResponse(PlatformBase):
     id: int
     address: str
     longitude: float
@@ -9,7 +20,7 @@ class Platform(BaseModel):
     status: str
 
 class AllPlatforms(BaseModel):
-    platforms: list[Platform]
+    platforms: List[PlatformResponse]
 
 class PlatformCommentBase(BaseModel):
     text: str
@@ -24,5 +35,3 @@ class PlatformCommentResponse(PlatformCommentBase):
 
     class Config:
         from_attributes = True
-
-

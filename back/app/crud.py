@@ -35,38 +35,18 @@ def delete_platform(session, platform_id):
     else:
         print(f"Пользователь с ID {platform_id} не найден.")
 
-def create_comment(session, platform_id: int, text: str, date: int = None):
-    platform = session.query(Platform).filter_by(platform_id=platform_id).first()
-    if not platform:
-        raise ValueError(f"Платформа с ID {platform_id} не найдена")
-
-    new_comment = PlatformComment(
+def create_comment(db: Session, platform_id: int, text: str):
+    db_comment = PlatformCommentDB(
         platform_id=platform_id,
         text=text,
-        date=int(time.time())
+        date=int(datetime.now().timestamp())
     )
-    session.add(new_comment)
-    return new_comment
+    db.add(db_comment)
+    db.commit()
+    db.refresh(db_comment)
+    return db_comment
 
-def read_comments(session, platform_id: int):
-    return session.query(PlatformComment).filter_by(platform_id=platform_id).all()
-
-def read_comment(session, comment_id: int):
-    return session.query(PlatformComment).filter_by(comment_id=comment_id).first()
-
-def update_comment(session, comment_id: int, new_text: str):
-    comment = session.query(PlatformComment).filter_by(comment_id=comment_id).first()
-    if comment:
-        comment.text = new_text
-        comment.date = int(time.time())
-    else:
-        raise ValueError(f"Комментарий с ID {comment_id} не найден")
-    return comment
-
-def delete_comment(session, comment_id: int):
-    comment = session.query(PlatformComment).filter_by(comment_id=comment_id).first()
-    if comment:
-        session.delete(comment)
-    else:
-        raise ValueError(f"Комментарий с ID {comment_id} не найден")
-    return True
+def get_comments(db: Session, platform_id: int):
+    return db.query(PlatformCommentDB).filter(
+        PlatformCommentDB.platform_id == platform_id
+    ).all()
