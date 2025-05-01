@@ -188,7 +188,7 @@ function App() {
                 eventHandlers={{
                   click: () => loadDetails(platform.id),
                 }}
-                icon={getIconByStatus(platform.status)} // Используем новую функцию
+                icon={getIconByStatus(platform.status)}
               />
             ))}
           </MarkerClusterGroup>
