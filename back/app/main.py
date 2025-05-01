@@ -10,9 +10,9 @@ from fastapi import HTTPException
 
 from fastapi.middleware.cors import CORSMiddleware
 
-from back.app.crud import create_platform, import_excel_to_db
-from back.app.pydanticModels import AllPlatforms
-from back.app.sqlModels import PlatformComment, db_helper, Platform
+from app.crud import create_platform, import_excel_to_db
+from app.pydanticModels import AllPlatforms
+from app.sqlModels import PlatformComment, db_helper, Platform
 
 app = FastAPI()
 
