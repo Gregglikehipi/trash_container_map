@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, Column, ForeignKey, Integer, Text, Float
+from sqlalchemy import create_engine, Column, ForeignKey, Integer, Text, Float, String
 from sqlalchemy.orm import sessionmaker, declarative_base, relationship, Session, Mapped, mapped_column
 
 Base = declarative_base()
@@ -19,13 +19,12 @@ class DatabaseHelper:
         finally:
             db.close()
 
-# Инициализация помощника БД
 db_helper = DatabaseHelper(url="sqlite:///platforms.db", echo=False)
 
 class PlatformDB(Base):
     __tablename__ = 'platform'
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, name="platform_id")
+    id: Mapped[str] = mapped_column(String, primary_key=True, name="platform_id")
     address: Mapped[str] = mapped_column(Text)
     longitude: Mapped[float] = mapped_column(Float)
     latitude: Mapped[float] = mapped_column(Float)
@@ -40,9 +39,9 @@ class PlatformCommentDB(Base):
     __tablename__ = 'platform_comment'
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, name="comment_id")
-    platform_id: Mapped[int] = mapped_column(ForeignKey('platform.platform_id'))
+    platform_id: Mapped[str] = mapped_column(ForeignKey('platform.platform_id'))
     text: Mapped[str] = mapped_column(Text)
-    date: Mapped[int] = mapped_column(Integer)  # Лучше использовать DateTime
+    date: Mapped[int] = mapped_column(Integer) 
 
     platform: Mapped["PlatformDB"] = relationship(
         "PlatformDB", 

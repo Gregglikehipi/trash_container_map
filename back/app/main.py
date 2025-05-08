@@ -5,12 +5,15 @@ from sqlalchemy.orm import Session
 from app.sqlModels import db_helper, PlatformDB, PlatformCommentDB, Base
 from app.pydanticModels import (
     AllPlatforms,
+    PlatformCommentBase,
     PlatformResponse,
-    PlatformCommentCreate,
     PlatformCommentResponse
 )
 import pandas as pd
+import os
 from datetime import datetime
+from collections import defaultdict
+from .crud import create_comment, get_comments, filter_platforms_by_status, get_platforms_stats
 
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -34,7 +37,6 @@ app.add_middleware(
 @app.on_event("startup")
 async def load_platforms():
     try:
-        # Создаем таблицы, если они еще не существуют
         Base.metadata.create_all(bind=db_helper.engine)
         
         file_path = "app/data/Выгрузка.xlsx"
@@ -46,9 +48,8 @@ async def load_platforms():
         
         db = db_helper.SessionLocal()
         try:
-            # Проверяем, есть ли уже данные в таблице
             count = db.query(PlatformDB).count()
-            if count == 0:  # Добавляем данные только если таблица пуста
+            if count == 0:
                 for _, row in df.iterrows():
                     platform = PlatformDB(
                         id=row['НомерПлощадки'],
@@ -79,8 +80,16 @@ def read_platform_info(id: int, session: Session = Depends(db_helper.get_db)):
 
 
 @app.get("/platform_photo/{platform_id}")
-def read_platform_photo(platform_id: int):
-    return FileResponse(path=f"app/photo/{platform_id}.jpg")
+def read_platform_photo(platform_id: str):
+    photo_dir = "app/photo"
+    platform_prefix = platform_id
+
+    for filename in os.listdir(photo_dir):
+        if filename.startswith(f"{platform_prefix}_") and filename.endswith(".jpg"):
+            file_path = os.path.join(photo_dir, filename)
+            return FileResponse(file_path)
+
+    raise HTTPException(status_code=404, detail="Photo not found")
 
 
 @app.post("/platform_info/{id}")
@@ -95,13 +104,25 @@ def read_item(session: Annotated[Session, Depends(db_helper.get_db)]):
 
 @app.post("/comments/{platform_id}", response_model=PlatformCommentResponse)
 def post_create_comment(
-    platform_id: int,
-    comment_data: PlatformCommentCreate,
+    platform_id: str,
+    comment_data: PlatformCommentBase,
     session: Session = Depends(db_helper.get_db)
 ):
     new_comment = create_comment(session, platform_id, comment_data.text)
     return new_comment
 
 @app.get("/comments/{platform_id}", response_model=list[PlatformCommentResponse])
-def get_read_comments(platform_id: int, session: Session = Depends(db_helper.get_db)):
+def get_read_comments(platform_id: str, session: Session = Depends(db_helper.get_db)):
     return get_comments(session, platform_id)
+
+@app.get("/platforms/filter/", response_model=AllPlatforms)
+def filter_platforms(
+    status: str = None,
+    db: Session = Depends(db_helper.get_db)
+):
+    platforms = filter_platforms_by_status(db, status)
+    return AllPlatforms(platforms=platforms)
+
+@app.get("/platforms/stats")
+def get_platform_stats(db: Session = Depends(db_helper.get_db)):
+    return get_platforms_stats(db)
