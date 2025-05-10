@@ -19,7 +19,7 @@ class DatabaseHelper:
         finally:
             db.close()
 
-db_helper = DatabaseHelper(url="sqlite:///platforms.db", echo=False)
+db_helper = DatabaseHelper(url="sqlite:///app/platforms.db", echo=False)
 
 class PlatformDB(Base):
     __tablename__ = 'platform'

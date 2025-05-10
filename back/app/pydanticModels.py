@@ -13,7 +13,7 @@ class PlatformCreate(PlatformBase):
     status: str = "green"
 
 class PlatformResponse(PlatformBase):
-    id: str
+    id: int
     address: str
     longitude: float
     latitude: float

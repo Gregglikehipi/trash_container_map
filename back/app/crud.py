@@ -4,17 +4,17 @@ from collections import defaultdict
 
 
 def create_platform(session, address, longitude, latitude):
-    new_platform = Platform(address=address, longitude=longitude, latitude=latitude)
+    new_platform = PlatformDB(address=address, longitude=longitude, latitude=latitude)
     session.add(new_platform)
 
 
 def read_platforms(session):
-    platforms = session.query(Platform).all()
+    platforms = session.query(PlatformDB).all()
     return platforms
 
 
 def update_platform(session, platform_id, address=None, longitude=None, latitude=None):
-    platform = session.query(Platform).filter_by(platform_id=platform_id).first()
+    platform = session.query(PlatformDB).filter_by(platform_id=platform_id).first()
 
     if platform:
         if address:
@@ -29,7 +29,7 @@ def update_platform(session, platform_id, address=None, longitude=None, latitude
 
 
 def delete_platform(session, platform_id):
-    platform = session.query(Platform).filter_by(platform_id=platform_id).first()
+    platform = session.query(PlatformDB).filter_by(platform_id=platform_id).first()
 
     if platform:
         session.delete(platform)

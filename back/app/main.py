@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, UploadFile, File
 from fastapi.responses import FileResponse
 from typing import Union, Annotated
 from sqlalchemy.orm import Session
@@ -13,11 +13,15 @@ import pandas as pd
 import os
 from datetime import datetime
 from collections import defaultdict
-from .crud import create_comment, get_comments, filter_platforms_by_status, get_platforms_stats
+from app.crud import *
+import shutil
 
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
+
+UPLOAD_DIR = "app/photo"
+os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 info = {"platforms": [ {"id": 1, "address": "Ленина", "longitude": 55.148707, "latitude": 61.433685, "status": "red"}, {"id": 2, "address": "Ленина", "longitude": 55.148707, "latitude": 61.333685, "status": "yellow"}, {"id": 3, "address": "Ленина", "longitude": 55.148707, "latitude": 61.533685, "status": "green"}]}
 
@@ -33,7 +37,7 @@ app.add_middleware(
 
 # model = YOLO("app/my_model.pt")
 
-
+"""
 @app.on_event("startup")
 async def load_platforms():
     try:
@@ -65,11 +69,12 @@ async def load_platforms():
             
     except Exception as e:
         raise RuntimeError(f"Ошибка инициализации данных: {str(e)}")
+"""
 
 @app.get("/platforms", response_model=AllPlatforms)
 def get_platforms(session: Session = Depends(db_helper.get_db)):
-    platforms = session.query(PlatformDB).all()
-    return AllPlatforms(platforms=platforms)
+    platforms = read_platforms(session)
+    return AllPlatforms(platforms = platforms)
 
 @app.get("/platform_info/{id}", response_model=PlatformResponse)
 def read_platform_info(id: str, session: Session = Depends(db_helper.get_db)):
@@ -79,17 +84,28 @@ def read_platform_info(id: str, session: Session = Depends(db_helper.get_db)):
     return platform
 
 
+
+
 @app.get("/platform_photo/{platform_id}")
 def read_platform_photo(platform_id: str):
     photo_dir = "app/photo"
     platform_prefix = platform_id
 
     for filename in os.listdir(photo_dir):
-        if filename.startswith(f"{platform_prefix}_") and filename.endswith(".jpg"):
+        if filename.startswith(f"{platform_prefix}") and filename.endswith(".jpg"):
             file_path = os.path.join(photo_dir, filename)
             return FileResponse(file_path)
 
     raise HTTPException(status_code=404, detail="Photo not found")
+
+@app.post("/platform_photo/{platform_id}")
+def save_platform_photo(file: UploadFile = File(...)):
+    file_path = os.path.join(UPLOAD_DIR, file.filename)
+
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+
+    return {"filename": file.filename, "saved_to": file_path}
 
 
 @app.post("/platform_info/{id}")
