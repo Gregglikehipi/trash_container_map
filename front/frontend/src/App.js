@@ -34,55 +34,55 @@ function App() {
   const [platforms, setPlatforms] = useState([]); 
   const [selectedPlatform, setSelectedPlatform] = useState(null); 
   const [isPanelVisible, setIsPanelVisible] = useState(true);
+  const [comments, setComments] = useState([]); // Новое состояние для комментариев
+  const [commentText, setCommentText] = useState(''); // Новое состояние для текста комментария
 
   const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8000';
 
   useEffect(() => {
+    // Загрузка данных платформ с сервера
     axios.get(`${backendUrl}/platforms`)
       .then((response) => {
-        const platformsData = response.data.platforms.map((platform) => {
-          const formattedId = formatId(platform.id);
-          return {
-            ...platform,
-            id: formattedId,
-            image: `${backendUrl}/platform_photo/${formattedId}`,
-          };
-        });
+        const platformsData = response.data.platforms.map((platform) => ({
+          ...platform,
+          image: `${backendUrl}/platform_photo/${formatId(platform.id)}`, 
+        }));
         setPlatforms(platformsData);
-        setSelectedPlatform(null);
+        console.log('Платформы:', platformsData); 
+        setSelectedPlatform(null); 
       })
       .catch((error) => {
         console.error("Ошибка при загрузке данных:", error);
       });
   }, []);
 
-  const formatId = (id) => {
-    return String(id).padStart(8, '0'); // делаем строкой и дополняем до 8 знаков нулями слева
-  };
-
   const loadDetails = async (id) => {
     try {
       const formattedId = formatId(id); // форматируем ID
-  
+
       const response = await axios.get(`${backendUrl}/platform_info/${formattedId}`, {
         params: { item_id: formattedId }
       });
-  
+
       const platform = response.data;
-  
+
       if (platform) {
         const imageResponse = await axios.get(`${backendUrl}/platform_photo/${formattedId}`, {
           responseType: 'blob'
         });
-  
+
         const imageUrl = URL.createObjectURL(imageResponse.data);
-  
+
+        // Получаем комментарии для платформы
+        const commentsResponse = await axios.get(`${backendUrl}/comments/${formattedId}`);
+        const commentsData = commentsResponse.data;
+
         setSelectedPlatform({
           ...platform,
           id: formattedId,
           image: imageUrl,
         });
-  
+        setComments(commentsData); // Сохраняем комментарии
         setIsPanelVisible(true);
       } else {
         alert('Детали не найдены');
@@ -93,7 +93,36 @@ function App() {
     }
   };
 
-  // Функция для выбора иконки на основе статуса
+  const handleSubmitComment = async (event) => {
+    event.preventDefault();
+
+    if (!selectedPlatform) {
+      alert('Выберите платформу для добавления комментария');
+      return;
+    }
+
+    try {
+      const response = await axios.post(
+        `${backendUrl}/platform_info/${selectedPlatform.id}`,
+        { text: commentText },
+        { params: { item_id: selectedPlatform.id } }
+      );
+
+      // Обновляем список комментариев
+      setComments([...comments, response.data]);
+      setCommentText(''); // Очищаем поле ввода
+
+      console.log('Комментарий успешно добавлен:', response.data);
+    } catch (error) {
+      console.error("Ошибка при отправке комментария:", error);
+      alert('Ошибка при отправке комментария');
+    }
+  };
+
+  const formatId = (id) => {
+    return String(id).padStart(8, '0'); // делаем строкой и дополняем до 8 знаков нулями слева
+  };
+
   const getIconByStatus = (status) => {
     switch (status) {
       case 'green':
@@ -152,6 +181,33 @@ function App() {
                   style={{ maxWidth: '100%', marginTop: '16px' }}
                 />
               )}
+              {/* Форма для отправки комментария */}
+              <div style={{ marginTop: '20px' }}>
+                <h3>Добавить комментарий</h3>
+                <form onSubmit={handleSubmitComment}>
+                  <input
+                    type="text"
+                    placeholder="Введите ваш комментарий..."
+                    value={commentText}
+                    onChange={(e) => setCommentText(e.target.value)}
+                    required
+                  />
+                  <button type="submit">Отправить</button>
+                </form>
+              </div>
+              {/* Отображение существующих комментариев */}
+              <div style={{ marginTop: '20px' }}>
+                <h3>Комментарии:</h3>
+                {comments.length > 0 ? (
+                  <ul>
+                    {comments.map((comment) => (
+                      <li key={comment.id}>{comment.text} — {new Date(comment.date).toLocaleString()}</li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p>Нет комментариев</p>
+                )}
+              </div>
             </div>
           ) : (
             <p>Выберите платформу на карте</p>
