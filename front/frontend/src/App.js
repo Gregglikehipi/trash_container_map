@@ -34,6 +34,8 @@ function App() {
   const [platforms, setPlatforms] = useState([]); 
   const [selectedPlatform, setSelectedPlatform] = useState(null); 
   const [isPanelVisible, setIsPanelVisible] = useState(true);
+  const [comments, setComments] = useState([]); // Новое состояние для комментариев
+  const [commentText, setCommentText] = useState(''); // Новое состояние для текста комментария
 
   const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8000';
 
@@ -43,7 +45,7 @@ function App() {
       .then((response) => {
         const platformsData = response.data.platforms.map((platform) => ({
           ...platform,
-          image: `${backendUrl}/platform_photo/${platform.id}`, 
+          image: `${backendUrl}/platform_photo/${formatId(platform.id)}`, 
         }));
         setPlatforms(platformsData);
         console.log('Платформы:', platformsData); 
@@ -56,21 +58,42 @@ function App() {
 
   const loadDetails = async (id) => {
     try {
-      // Загрузка подробной информации о платформе
-      const response = await axios.get(`${backendUrl}/platform_info/${id}`, {
-        params: { item_id: id } 
-      });
-      const platform = response.data;
-      if (platform) {
-        const imageResponse = await axios.get(`${backendUrl}/platform_photo/${id}`, { responseType: 'blob' });
-        const imageUrl = URL.createObjectURL(imageResponse.data);
-        const updatedPlatform = {
-          ...platform,
-          image: imageUrl,
-        };
+      const formattedId = formatId(id); // форматируем ID
   
-        setSelectedPlatform(updatedPlatform); 
-        setIsPanelVisible(true); 
+      // Загружаем основную информацию о платформе
+      const response = await axios.get(`${backendUrl}/platform_info/${formattedId}`, {
+        params: { item_id: formattedId }
+      });
+  
+      const platform = response.data;
+  
+      if (platform) {
+        let imageUrl = null;
+  
+        // Пытаемся загрузить фото, но не падаем, если его нет
+        try {
+          const imageResponse = await axios.get(`${backendUrl}/platform_photo/${formattedId}`, {
+            responseType: 'blob'
+          });
+          imageUrl = URL.createObjectURL(imageResponse.data);
+        } catch (imageError) {
+          console.warn("Фото не найдено:", imageError);
+          // Если фото не найдено — просто продолжаем без него
+        }
+  
+        // Получаем комментарии
+        const commentsResponse = await axios.get(`${backendUrl}/comments/${formattedId}`);
+        const commentsData = commentsResponse.data;
+  
+        // Устанавливаем данные платформы (с фото или без)
+        setSelectedPlatform({
+          ...platform,
+          id: formattedId,
+          image: imageUrl, // может быть null
+        });
+  
+        setComments(commentsData);
+        setIsPanelVisible(true);
       } else {
         alert('Детали не найдены');
       }
@@ -80,7 +103,34 @@ function App() {
     }
   };
 
-  // Функция для выбора иконки на основе статуса
+const handleSubmitComment = async (event) => {
+  event.preventDefault();
+
+  if (!selectedPlatform) {
+    alert('Выберите платформу для добавления комментария');
+    return;
+  }
+
+  try {
+    const response = await axios.post(
+      `${backendUrl}/comments/${selectedPlatform.id}`, // Используем правильный эндпоинт
+      { text: commentText } // Отправляем текст в теле запроса
+    );
+
+    setComments([...comments, response.data]); // Добавляем новый комментарий к списку
+    setCommentText(''); // Очищаем поле ввода
+
+    console.log('Комментарий успешно добавлен:', response.data);
+  } catch (error) {
+    console.error("Ошибка при отправке комментария:", error);
+    alert('Ошибка при отправке комментария');
+  }
+};
+
+  const formatId = (id) => {
+    return String(id).padStart(8, '0'); // делаем строкой и дополняем до 8 знаков нулями слева
+  };
+
   const getIconByStatus = (status) => {
     switch (status) {
       case 'green':
@@ -139,6 +189,33 @@ function App() {
                   style={{ maxWidth: '100%', marginTop: '16px' }}
                 />
               )}
+              {/* Форма для отправки комментария */}
+              <div style={{ marginTop: '20px' }}>
+                <h3>Добавить комментарий</h3>
+                <form onSubmit={handleSubmitComment}>
+                  <input
+                    type="text"
+                    placeholder="Введите ваш комментарий..."
+                    value={commentText}
+                    onChange={(e) => setCommentText(e.target.value)}
+                    required
+                  />
+                  <button type="submit">Отправить</button>
+                </form>
+              </div>
+              {/* Отображение существующих комментариев */}
+              <div style={{ marginTop: '20px' }}>
+                <h3>Комментарии:</h3>
+                {comments.length > 0 ? (
+                  <ul>
+                    {comments.map((comment) => (
+                      <li key={comment.id}>{comment.text} — {new Date(comment.date).toLocaleString()}</li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p>Нет комментариев</p>
+                )}
+              </div>
             </div>
           ) : (
             <p>Выберите платформу на карте</p>
