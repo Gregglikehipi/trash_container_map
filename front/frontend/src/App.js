@@ -59,30 +59,40 @@ function App() {
   const loadDetails = async (id) => {
     try {
       const formattedId = formatId(id); // форматируем ID
-
+  
+      // Загружаем основную информацию о платформе
       const response = await axios.get(`${backendUrl}/platform_info/${formattedId}`, {
         params: { item_id: formattedId }
       });
-
+  
       const platform = response.data;
-
+  
       if (platform) {
-        const imageResponse = await axios.get(`${backendUrl}/platform_photo/${formattedId}`, {
-          responseType: 'blob'
-        });
-
-        const imageUrl = URL.createObjectURL(imageResponse.data);
-
-        // Получаем комментарии для платформы
+        let imageUrl = null;
+  
+        // Пытаемся загрузить фото, но не падаем, если его нет
+        try {
+          const imageResponse = await axios.get(`${backendUrl}/platform_photo/${formattedId}`, {
+            responseType: 'blob'
+          });
+          imageUrl = URL.createObjectURL(imageResponse.data);
+        } catch (imageError) {
+          console.warn("Фото не найдено:", imageError);
+          // Если фото не найдено — просто продолжаем без него
+        }
+  
+        // Получаем комментарии
         const commentsResponse = await axios.get(`${backendUrl}/comments/${formattedId}`);
         const commentsData = commentsResponse.data;
-
+  
+        // Устанавливаем данные платформы (с фото или без)
         setSelectedPlatform({
           ...platform,
           id: formattedId,
-          image: imageUrl,
+          image: imageUrl, // может быть null
         });
-        setComments(commentsData); // Сохраняем комментарии
+  
+        setComments(commentsData);
         setIsPanelVisible(true);
       } else {
         alert('Детали не найдены');
@@ -93,31 +103,29 @@ function App() {
     }
   };
 
-  const handleSubmitComment = async (event) => {
-    event.preventDefault();
+const handleSubmitComment = async (event) => {
+  event.preventDefault();
 
-    if (!selectedPlatform) {
-      alert('Выберите платформу для добавления комментария');
-      return;
-    }
+  if (!selectedPlatform) {
+    alert('Выберите платформу для добавления комментария');
+    return;
+  }
 
-    try {
-      const response = await axios.post(
-        `${backendUrl}/platform_info/${selectedPlatform.id}`,
-        { text: commentText },
-        { params: { item_id: selectedPlatform.id } }
-      );
+  try {
+    const response = await axios.post(
+      `${backendUrl}/comments/${selectedPlatform.id}`, // Используем правильный эндпоинт
+      { text: commentText } // Отправляем текст в теле запроса
+    );
 
-      // Обновляем список комментариев
-      setComments([...comments, response.data]);
-      setCommentText(''); // Очищаем поле ввода
+    setComments([...comments, response.data]); // Добавляем новый комментарий к списку
+    setCommentText(''); // Очищаем поле ввода
 
-      console.log('Комментарий успешно добавлен:', response.data);
-    } catch (error) {
-      console.error("Ошибка при отправке комментария:", error);
-      alert('Ошибка при отправке комментария');
-    }
-  };
+    console.log('Комментарий успешно добавлен:', response.data);
+  } catch (error) {
+    console.error("Ошибка при отправке комментария:", error);
+    alert('Ошибка при отправке комментария');
+  }
+};
 
   const formatId = (id) => {
     return String(id).padStart(8, '0'); // делаем строкой и дополняем до 8 знаков нулями слева
