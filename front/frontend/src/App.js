@@ -52,7 +52,7 @@ function App() {
         const response = await axios.get(url);
         const platformsData = response.data.platforms.map((platform) => ({
           ...platform,
-          image: `${backendUrl}/platform_photo/${formatId(platform.id)}`,
+          image: `${backendUrl}/platform_photo/${platform.id}`,
         }));
         setPlatforms(platformsData);
       } catch (error) {
@@ -75,7 +75,8 @@ function App() {
 
   const loadDetails = async (id) => {
     try {
-      const formattedId = formatId(id); // форматируем ID
+      //const formattedId = formatId(id); // форматируем ID
+      const formattedId = id; // форматируем ID
   
       // Загружаем основную информацию о платформе
       const response = await axios.get(`${backendUrl}/platform_info/${formattedId}`, {
