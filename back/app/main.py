@@ -40,11 +40,11 @@ async def load_platforms():
         Base.metadata.create_all(bind=db_helper.engine)
         
         file_path = "app/data/Выгрузка.xlsx"
-        df = pd.read_excel(file_path, engine='openpyxl')
+        df = pd.read_excel(file_path, engine='openpyxl', dtype={'НомерПлощадки': str})
         
         df['Долгота'] = df['Долгота'].astype(str).str.replace(',', '.').astype(float)
         df['Широта'] = df['Широта'].astype(str).str.replace(',', '.').astype(float)
-        df['НомерПлощадки'] = df['НомерПлощадки'].astype(int)
+        df['НомерПлощадки'] = df['НомерПлощадки'].astype(str)
         
         db = db_helper.SessionLocal()
         try:
@@ -72,7 +72,7 @@ def get_platforms(session: Session = Depends(db_helper.get_db)):
     return AllPlatforms(platforms=platforms)
 
 @app.get("/platform_info/{id}", response_model=PlatformResponse)
-def read_platform_info(id: int, session: Session = Depends(db_helper.get_db)):
+def read_platform_info(id: str, session: Session = Depends(db_helper.get_db)):
     platform = session.get(PlatformDB, id)
     if not platform:
         raise HTTPException(status_code=404, detail="Площадка не найдена")
