@@ -36,25 +36,42 @@ function App() {
   const [isPanelVisible, setIsPanelVisible] = useState(true);
   const [comments, setComments] = useState([]); // Новое состояние для комментариев
   const [commentText, setCommentText] = useState(''); // Новое состояние для текста комментария
+  const [filterStatus, setFilterStatus] = useState(null); // null — показать все
+  const [stats, setStats] = useState({ green: 0, yellow: 0, red: 0 });
 
   const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8000';
 
   useEffect(() => {
-    // Загрузка данных платформ с сервера
-    axios.get(`${backendUrl}/platforms`)
-      .then((response) => {
+    const fetchPlatforms = async () => {
+      try {
+        let url = `${backendUrl}/platforms`;
+        if (filterStatus) {
+          url = `${backendUrl}/platforms/filter/?status=${filterStatus}`;
+        }
+  
+        const response = await axios.get(url);
         const platformsData = response.data.platforms.map((platform) => ({
           ...platform,
-          image: `${backendUrl}/platform_photo/${formatId(platform.id)}`, 
+          image: `${backendUrl}/platform_photo/${formatId(platform.id)}`,
         }));
         setPlatforms(platformsData);
-        console.log('Платформы:', platformsData); 
-        setSelectedPlatform(null); 
-      })
-      .catch((error) => {
+      } catch (error) {
         console.error("Ошибка при загрузке данных:", error);
-      });
-  }, []);
+      }
+    };
+  
+    const fetchStats = async () => {
+      try {
+        const statsResponse = await axios.get(`${backendUrl}/platforms/stats`);
+        setStats(statsResponse.data);
+      } catch (error) {
+        console.error("Ошибка при загрузке статистики:", error);
+      }
+    };
+  
+    fetchPlatforms();
+    fetchStats();
+  }, [filterStatus]);
 
   const loadDetails = async (id) => {
     try {
@@ -254,9 +271,47 @@ const handleSubmitComment = async (event) => {
           zoom={12}
           style={{ width: '100%', height: '100%' }}
         >
-          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+          {/* Панель фильтрации и статистики */}
+          <div style={{
+            position: 'absolute',
+            top: '10px',
+            right: '10px',
+            zIndex: 1000,
+            backgroundColor: 'white',
+            padding: '10px',
+            borderRadius: '8px',
+            boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
+          }}>
+            <h4 style={{ margin: '0 0 10px', textAlign: 'center' }}>Фильтр</h4>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
+              <button
+                onClick={() => setFilterStatus(null)}
+                style={{ background: filterStatus === null ? '#007bff' : '#ddd', color: filterStatus === null ? 'white' : 'black', border: 'none', padding: '5px 10px', cursor: 'pointer' }}
+              >
+                Все
+              </button>
+              <button
+                onClick={() => setFilterStatus('green')}
+                style={{ background: filterStatus === 'green' ? 'green' : '#ddd', color: filterStatus === 'green' ? 'white' : 'black', border: 'none', padding: '5px 10px', cursor: 'pointer' }}
+              >
+                Зелёные ({stats.green})
+              </button>
+              <button
+                onClick={() => setFilterStatus('yellow')}
+                style={{ background: filterStatus === 'yellow' ? 'orange' : '#ddd', color: filterStatus === 'yellow' ? 'white' : 'black', border: 'none', padding: '5px 10px', cursor: 'pointer' }}
+              >
+                Жёлтые ({stats.yellow})
+              </button>
+              <button
+                onClick={() => setFilterStatus('red')}
+                style={{ background: filterStatus === 'red' ? 'red' : '#ddd', color: filterStatus === 'red' ? 'white' : 'black', border: 'none', padding: '5px 10px', cursor: 'pointer' }}
+              >
+                Красные ({stats.red})
+              </button>
+            </div>
+          </div>
 
-          {/* Группировка маркеров */}
+          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
           <MarkerClusterGroup>
             {platforms.map((platform) => (
               <Marker
