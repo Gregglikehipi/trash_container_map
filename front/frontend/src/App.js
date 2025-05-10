@@ -38,39 +38,52 @@ function App() {
   const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8000';
 
   useEffect(() => {
-    // Загрузка данных платформ с сервера
     axios.get(`${backendUrl}/platforms`)
       .then((response) => {
-        const platformsData = response.data.platforms.map((platform) => ({
-          ...platform,
-          image: `${backendUrl}/platform_photo/${platform.id}`, 
-        }));
+        const platformsData = response.data.platforms.map((platform) => {
+          const formattedId = formatId(platform.id);
+          return {
+            ...platform,
+            id: formattedId,
+            image: `${backendUrl}/platform_photo/${formattedId}`,
+          };
+        });
         setPlatforms(platformsData);
-        console.log('Платформы:', platformsData); 
-        setSelectedPlatform(null); 
+        setSelectedPlatform(null);
       })
       .catch((error) => {
         console.error("Ошибка при загрузке данных:", error);
       });
   }, []);
 
+  const formatId = (id) => {
+    return String(id).padStart(8, '0'); // делаем строкой и дополняем до 8 знаков нулями слева
+  };
+
   const loadDetails = async (id) => {
     try {
-      // Загрузка подробной информации о платформе
-      const response = await axios.get(`${backendUrl}/platform_info/${id}`, {
-        params: { item_id: id } 
-      });
-      const platform = response.data;
-      if (platform) {
-        const imageResponse = await axios.get(`${backendUrl}/platform_photo/${id}`, { responseType: 'blob' });
-        const imageUrl = URL.createObjectURL(imageResponse.data);
-        const updatedPlatform = {
-          ...platform,
-          image: imageUrl,
-        };
+      const formattedId = formatId(id); // форматируем ID
   
-        setSelectedPlatform(updatedPlatform); 
-        setIsPanelVisible(true); 
+      const response = await axios.get(`${backendUrl}/platform_info/${formattedId}`, {
+        params: { item_id: formattedId }
+      });
+  
+      const platform = response.data;
+  
+      if (platform) {
+        const imageResponse = await axios.get(`${backendUrl}/platform_photo/${formattedId}`, {
+          responseType: 'blob'
+        });
+  
+        const imageUrl = URL.createObjectURL(imageResponse.data);
+  
+        setSelectedPlatform({
+          ...platform,
+          id: formattedId,
+          image: imageUrl,
+        });
+  
+        setIsPanelVisible(true);
       } else {
         alert('Детали не найдены');
       }
