@@ -210,28 +210,86 @@ const handleSubmitComment = async (event) => {
               {/* Форма для отправки комментария */}
               <div style={{ marginTop: '20px' }}>
                 <h3>Добавить комментарий</h3>
-                <form onSubmit={handleSubmitComment}>
+                <form onSubmit={handleSubmitComment} style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '10px'
+                }}>
                   <input
                     type="text"
                     placeholder="Введите ваш комментарий..."
                     value={commentText}
                     onChange={(e) => setCommentText(e.target.value)}
                     required
+                    style={{
+                      padding: '10px',
+                      borderRadius: '6px',
+                      border: '1px solid #ccc',
+                      fontSize: '14px',
+                      width: '100%',
+                      boxSizing: 'border-box',
+                      outline: 'none',
+                      transition: 'border-color 0.3s ease',
+                    }}
+                    onFocus={(e) => e.target.style.borderColor = '#007bff'}
+                    onBlur={(e) => e.target.style.borderColor = '#ccc'}
                   />
-                  <button type="submit">Отправить</button>
+                  <button
+                    type="submit"
+                    style={{
+                      padding: '10px 15px',
+                      background: 'linear-gradient(to right, #007bff, #0056b3)',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '6px',
+                      cursor: 'pointer',
+                      fontWeight: 'bold',
+                      boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                      transition: 'background 0.3s ease',
+                    }}
+                    onMouseOver={(e) => {
+                      e.target.style.background = 'linear-gradient(to right, #0056b3, #004085)';
+                    }}
+                    onMouseOut={(e) => {
+                      e.target.style.background = 'linear-gradient(to right, #007bff, #0056b3)';
+                    }}
+                  >
+                    Отправить
+                  </button>
                 </form>
               </div>
               {/* Отображение существующих комментариев */}
               <div style={{ marginTop: '20px' }}>
-                <h3>Комментарии:</h3>
+                <h3>Комментарии</h3>
                 {comments.length > 0 ? (
-                  <ul>
+                  <ul style={{
+                    listStyle: 'none',
+                    paddingLeft: 0,
+                    maxHeight: '200px',
+                    overflowY: 'auto',
+                    border: '1px solid #eee',
+                    borderRadius: '6px',
+                    padding: '10px',
+                    backgroundColor: '#f9f9f9',
+                  }}>
                     {comments.map((comment) => (
-                      <li key={comment.id}>{comment.text} — {new Date(comment.date).toLocaleString()}</li>
+                      <li key={comment.id} style={{
+                        backgroundColor: '#fff',
+                        padding: '10px',
+                        marginBottom: '10px',
+                        borderRadius: '6px',
+                        boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                        position: 'relative',
+                      }}>
+                        <p style={{ margin: '0 0 5px', fontSize: '14px' }}><strong>{comment.text}</strong></p>
+                        <small style={{ color: '#888', fontSize: '12px' }}>
+                          {new Date(comment.date).toLocaleString()}
+                        </small>
+                      </li>
                     ))}
                   </ul>
                 ) : (
-                  <p>Нет комментариев</p>
+                  <p style={{ fontStyle: 'italic', color: '#999' }}>Нет комментариев</p>
                 )}
               </div>
             </div>
