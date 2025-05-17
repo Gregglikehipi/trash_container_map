@@ -120,7 +120,7 @@ def read_item(session: Annotated[Session, Depends(db_helper.get_db)]):
 
 @app.post("/comments/{platform_id}", response_model=PlatformCommentResponse)
 def post_create_comment(
-    platform_id: str,
+    platform_id: int,
     comment_data: PlatformCommentBase,
     session: Session = Depends(db_helper.get_db)
 ):

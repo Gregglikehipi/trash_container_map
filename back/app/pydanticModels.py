@@ -27,7 +27,7 @@ class PlatformCommentBase(BaseModel):
 
 class PlatformCommentResponse(PlatformCommentBase):
     id: int
-    platform_id: str
+    platform_id: int
     date: datetime
 
     class Config:

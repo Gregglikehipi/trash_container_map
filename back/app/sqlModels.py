@@ -39,7 +39,7 @@ class PlatformCommentDB(Base):
     __tablename__ = 'platform_comment'
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, name="comment_id")
-    platform_id: Mapped[str] = mapped_column(ForeignKey('platform.platform_id'))
+    platform_id: Mapped[int] = mapped_column(ForeignKey('platform.platform_id'))
     text: Mapped[str] = mapped_column(Text)
     date: Mapped[int] = mapped_column(Integer) 
 
