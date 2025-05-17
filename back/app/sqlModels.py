@@ -19,7 +19,7 @@ class DatabaseHelper:
         finally:
             db.close()
 
-db_helper = DatabaseHelper(url="sqlite:///app/platforms.db", echo=False)
+db_helper = DatabaseHelper(url="sqlite:///app/data/platforms.db", echo=False)
 
 class PlatformDB(Base):
     __tablename__ = 'platform'
@@ -28,7 +28,8 @@ class PlatformDB(Base):
     address: Mapped[str] = mapped_column(Text)
     longitude: Mapped[float] = mapped_column(Float)
     latitude: Mapped[float] = mapped_column(Float)
-    status: Mapped[str] = mapped_column(Text, default="green")
+    status: Mapped[str] = mapped_column(Text)
+    change: Mapped[str] = mapped_column(Text)
 
     comments: Mapped[list["PlatformCommentDB"]] = relationship(
         "PlatformCommentDB", 
