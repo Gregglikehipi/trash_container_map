@@ -30,6 +30,13 @@ const redIcon = new L.Icon({
   popupAnchor: [0, -41]
 });
 
+const grayIcon = new L.Icon({
+  iconUrl: '/images/gray_marker.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [0, -41]
+});
+
 function App() {
   const [platforms, setPlatforms] = useState([]); 
   const [selectedPlatform, setSelectedPlatform] = useState(null); 
@@ -38,8 +45,14 @@ function App() {
   const [commentText, setCommentText] = useState(''); // Новое состояние для текста комментария
   const [filterStatus, setFilterStatus] = useState(null); // null — показать все
   const [stats, setStats] = useState({ green: 0, yellow: 0, red: 0 });
+  const [file, setFile] = useState(null);
 
   const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8000';
+  const renameFile = (file, platformId) => {
+    const extension = file.name.split('.').pop(); // Получаем расширение файла (например, 'jpg')
+    const newFileName = `${platformId}.${extension}`; // Создаем новое имя файла с ID платформы
+    return new File([file], newFileName, { type: file.type });
+  };
 
   useEffect(() => {
     const fetchPlatforms = async () => {
@@ -59,7 +72,7 @@ function App() {
         console.error("Ошибка при загрузке данных:", error);
       }
     };
-  
+      
     const fetchStats = async () => {
       try {
         const statsResponse = await axios.get(`${backendUrl}/platforms/stats`);
@@ -75,8 +88,8 @@ function App() {
 
   const loadDetails = async (id) => {
     try {
-      //const formattedId = formatId(id); // форматируем ID
-      const formattedId = id; // форматируем ID
+      const formattedId = formatId(id); // форматируем ID
+      //const formattedId = id; // форматируем ID
   
       // Загружаем основную информацию о платформе
       const response = await axios.get(`${backendUrl}/platform_info/${formattedId}`, {
@@ -121,29 +134,65 @@ function App() {
     }
   };
 
-const handleSubmitComment = async (event) => {
-  event.preventDefault();
+  const handleSubmitComment = async (event) => {
+    event.preventDefault();
 
-  if (!selectedPlatform) {
-    alert('Выберите платформу для добавления комментария');
-    return;
-  }
+    if (!selectedPlatform) {
+      alert('Выберите платформу для добавления комментария');
+      return;
+    }
 
-  try {
-    const response = await axios.post(
-      `${backendUrl}/comments/${selectedPlatform.id}`, // Используем правильный эндпоинт
-      { text: commentText } // Отправляем текст в теле запроса
-    );
+    try {
+      const response = await axios.post(
+        `${backendUrl}/comments/${selectedPlatform.id}`, // Используем правильный эндпоинт
+        { text: commentText } // Отправляем текст в теле запроса
+      );
 
-    setComments([...comments, response.data]); // Добавляем новый комментарий к списку
-    setCommentText(''); // Очищаем поле ввода
+      setComments([...comments, response.data]); // Добавляем новый комментарий к списку
+      setCommentText(''); // Очищаем поле ввода
 
-    console.log('Комментарий успешно добавлен:', response.data);
-  } catch (error) {
-    console.error("Ошибка при отправке комментария:", error);
-    alert('Ошибка при отправке комментария');
-  }
-};
+      console.log('Комментарий успешно добавлен:', response.data);
+    } catch (error) {
+      console.error("Ошибка при отправке комментария:", error);
+      alert('Ошибка при отправке комментария');
+    }
+  };
+
+  const handleSubmitPhoto = async (event) => {
+    event.preventDefault();
+    if (!selectedPlatform || !file) {
+      alert('Выберите платформу и файл для загрузки');
+      return;
+    }
+
+    try {
+      const renamedFile = renameFile(file, selectedPlatform.id); // Получаем переименованный файл
+
+      const formData = new FormData();
+      formData.append('file', renamedFile); // Используем переименованный файл
+
+      const response = await axios.post(
+        `${backendUrl}/platform_photo/${selectedPlatform.id}`,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        }
+      );
+
+      // После успешной загрузки, обновляем URL фото
+      setSelectedPlatform((prev) => ({
+        ...prev,
+        image: `${backendUrl}/platform_photo/${selectedPlatform.id}`
+      }));
+
+      alert('Фото успешно загружено!');
+    } catch (error) {
+      console.error("Ошибка при загрузке фото:", error);
+      alert('Не удалось загрузить фото');
+    }
+  };
 
   const formatId = (id) => {
     return String(id).padStart(8, '0'); // делаем строкой и дополняем до 8 знаков нулями слева
@@ -158,7 +207,7 @@ const handleSubmitComment = async (event) => {
       case 'red':
         return redIcon;
       default:
-        return greenIcon;
+        return grayIcon; // Серый цвет по умолчанию
     }
   };
 
@@ -291,6 +340,20 @@ const handleSubmitComment = async (event) => {
                 ) : (
                   <p style={{ fontStyle: 'italic', color: '#999' }}>Нет комментариев</p>
                 )}
+              </div>
+              <div style={{ marginTop: '20px' }}>
+                <h3>Загрузить фото мусорки</h3>
+                <form onSubmit={handleSubmitPhoto}>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setFile(e.target.files[0])}
+                    required
+                  />
+                  <button type="submit" disabled={!file}>
+                    Загрузить
+                  </button>
+                </form>
               </div>
             </div>
           ) : (
