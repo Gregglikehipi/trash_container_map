@@ -30,8 +30,8 @@ const redIcon = new L.Icon({
   popupAnchor: [0, -41]
 });
 
-const grayIcon = new L.Icon({
-  iconUrl: '/images/gray_marker.png',
+const greyIcon = new L.Icon({
+  iconUrl: '/images/grey_marker.png',
   iconSize: [25, 41],
   iconAnchor: [12, 41],
   popupAnchor: [0, -41]
@@ -207,7 +207,7 @@ function App() {
       case 'red':
         return redIcon;
       default:
-        return grayIcon; // Серый цвет по умолчанию
+        return greyIcon; // Серый цвет по умолчанию
     }
   };
 
