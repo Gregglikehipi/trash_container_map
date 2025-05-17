@@ -76,6 +76,12 @@ def get_platforms(session: Session = Depends(db_helper.get_db)):
     platforms = read_platforms(session)
     return AllPlatforms(platforms = platforms)
 
+@app.get("/platform", response_model=AllPlatforms)
+def get_platform(session: Session = Depends(db_helper.get_db)):
+    platforms = session.query(PlatformDB).limit(10).all()
+    return AllPlatforms(platforms = platforms)
+
+
 @app.get("/platform_info/{id}", response_model=PlatformResponse)
 def read_platform_info(id: str, session: Session = Depends(db_helper.get_db)):
     platform = session.get(PlatformDB, id)
@@ -99,8 +105,8 @@ def read_platform_photo(platform_id: str):
     raise HTTPException(status_code=404, detail="Photo not found")
 
 @app.post("/platform_photo/{platform_id}")
-def save_platform_photo(file: UploadFile = File(...)):
-    file_path = os.path.join(UPLOAD_DIR, file.filename)
+def save_platform_photo(platform_id: str, file: UploadFile = File(...), ):
+    file_path = os.path.join(UPLOAD_DIR, f"{platform_id}.jpg")
 
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
