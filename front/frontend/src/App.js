@@ -88,8 +88,8 @@ function App() {
 
   const loadDetails = async (id) => {
     try {
-      const formattedId = formatId(id); // форматируем ID
-      //const formattedId = id; // форматируем ID
+      //const formattedId = formatId(id); // форматируем ID
+      const formattedId = id; // форматируем ID
   
       // Загружаем основную информацию о платформе
       const response = await axios.get(`${backendUrl}/platform_info/${formattedId}`, {
