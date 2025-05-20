@@ -88,8 +88,8 @@ function App() {
 
   const loadDetails = async (id) => {
     try {
-      const formattedId = formatId(id); // форматируем ID
-      //const formattedId = id; // форматируем ID
+      //const formattedId = formatId(id); // форматируем ID
+      const formattedId = id; // форматируем ID
   
       // Загружаем основную информацию о платформе
       const response = await axios.get(`${backendUrl}/platform_info/${formattedId}`, {
@@ -255,6 +255,12 @@ function App() {
                   alt={selectedPlatform.address}
                   style={{ maxWidth: '100%', marginTop: '16px' }}
                 />
+              )}
+              {/* Отображение даты изменения */}
+              {selectedPlatform.change !== "-" && (
+                <p style={{ marginTop: '8px', fontStyle: 'italic', color: '#666' }}>
+                  Последнее изменение: {selectedPlatform.change}
+                </p>
               )}
               {/* Форма для отправки комментария */}
               <div style={{ marginTop: '20px' }}>

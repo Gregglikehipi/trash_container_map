@@ -13,19 +13,19 @@ def read_platforms(session):
     return platforms
 
 
-def update_platform(session, platform_id, address=None, longitude=None, latitude=None):
-    platform = session.query(PlatformDB).filter_by(platform_id=platform_id).first()
+
+def update_platform(session, platform_id, status, change):
+    platform = session.query(PlatformDB).filter_by(id=platform_id).first()
 
     if platform:
-        if address:
-            platform.address = address
-        if longitude:
-            platform.longitude = longitude
-        if latitude:
-            platform.latitude = latitude
+
+        platform.status = status
+        platform.change = change
+
+        session.commit()
 
     else:
-        print(f"Пользователь с ID {platform_id} не найден.")
+        print(f"ID {platform_id} не найден.")
 
 
 def delete_platform(session, platform_id):

@@ -10,7 +10,7 @@ class PlatformCreate(PlatformBase):
     address: str
     longitude: float
     latitude: float
-    status: str = "green"
+    status: str
 
 class PlatformResponse(PlatformBase):
     id: int
@@ -18,6 +18,7 @@ class PlatformResponse(PlatformBase):
     longitude: float
     latitude: float
     status: str
+    change: str
 
 class AllPlatforms(BaseModel):
     platforms: List[PlatformResponse]
