@@ -256,6 +256,12 @@ function App() {
                   style={{ maxWidth: '100%', marginTop: '16px' }}
                 />
               )}
+              {/* Отображение даты изменения */}
+              {selectedPlatform.change !== "-" && (
+                <p style={{ marginTop: '8px', fontStyle: 'italic', color: '#666' }}>
+                  Последнее изменение: {selectedPlatform.change}
+                </p>
+              )}
               {/* Форма для отправки комментария */}
               <div style={{ marginTop: '20px' }}>
                 <h3>Добавить комментарий</h3>
