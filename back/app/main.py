@@ -15,6 +15,9 @@ from datetime import datetime
 from collections import defaultdict
 from app.crud import *
 import shutil
+import cv2
+import numpy as np
+from ultralytics import YOLO
 
 
 from fastapi.middleware.cors import CORSMiddleware
@@ -35,7 +38,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# model = YOLO("app/my_model.pt")
+model = YOLO("app/my_model.pt")
 
 
 @app.get("/platforms", response_model=AllPlatforms)
@@ -78,7 +81,37 @@ def save_platform_photo(session: Annotated[Session, Depends(db_helper.get_db)],
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
 
-    update_platform(session, int(platform_id), "red", datetime.today().strftime('%d-%m-%Y'))
+    results = model(file_path)
+
+    result = results[0]
+
+    result.save(filename=file_path)
+
+    class_ids = result.boxes.cls.cpu().numpy().astype(int)
+
+    empty_count = np.sum(class_ids == 0)
+    full_count = np.sum(class_ids == 1)
+
+    print(f"Empty trash containers: {empty_count}")
+    print(f"Full trash containers: {full_count}")
+
+
+    if full_count > 0 and empty_count == 0:
+        update_platform(session, int(platform_id), "red", datetime.today().strftime('%d-%m-%Y'))
+        print("red")
+
+    if full_count > 0 and empty_count > 0:
+        update_platform(session, int(platform_id), "yellow", datetime.today().strftime('%d-%m-%Y'))
+        print("yellow")
+
+    if full_count == 0 and empty_count == 0:
+        print("huh?")
+
+    if full_count == 0 and empty_count > 0:
+        update_platform(session, int(platform_id), "green", datetime.today().strftime('%d-%m-%Y'))
+        print("green")
+
+
 
     return {"filename": file.filename, "saved_to": file_path}
 
