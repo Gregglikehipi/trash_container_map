@@ -47,7 +47,7 @@ function App() {
   const [stats, setStats] = useState({ green: 0, yellow: 0, red: 0 });
   const [file, setFile] = useState(null);
 
-  const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8000';
+  const backendUrl = 'https://primary-happily-worm.ngrok-free.app';
   const renameFile = (file, platformId) => {
     const extension = file.name.split('.').pop(); // Получаем расширение файла (например, 'jpg')
     const newFileName = `${platformId}.${extension}`; // Создаем новое имя файла с ID платформы
@@ -62,7 +62,9 @@ function App() {
           url = `${backendUrl}/platforms/filter/?status=${filterStatus}`;
         }
   
-        const response = await axios.get(url);
+        const response = await axios.get(url, {
+          headers: {    'ngrok-skip-browser-warning': '69420'
+          }});
         const platformsData = response.data.platforms.map((platform) => ({
           ...platform,
           image: `${backendUrl}/platform_photo/${platform.id}`,
@@ -75,7 +77,7 @@ function App() {
       
     const fetchStats = async () => {
       try {
-        const statsResponse = await axios.get(`${backendUrl}/platforms/stats`);
+        const statsResponse = await axios.get(`${backendUrl}/platforms/stats`, {headers: {'ngrok-skip-browser-warning': '69420'}});
         setStats(statsResponse.data);
       } catch (error) {
         console.error("Ошибка при загрузке статистики:", error);
@@ -93,7 +95,7 @@ function App() {
   
       // Загружаем основную информацию о платформе
       const response = await axios.get(`${backendUrl}/platform_info/${formattedId}`, {
-        params: { item_id: formattedId }
+        params: { item_id: formattedId }, headers: {'ngrok-skip-browser-warning': '69420'}
       });
   
       const platform = response.data;
@@ -104,8 +106,10 @@ function App() {
         // Пытаемся загрузить фото, но не падаем, если его нет
         try {
           const imageResponse = await axios.get(`${backendUrl}/platform_photo/${formattedId}`, {
-            responseType: 'blob'
+            responseType: 'blob',
+            headers: {'ngrok-skip-browser-warning': '69420'}
           });
+          
           imageUrl = URL.createObjectURL(imageResponse.data);
         } catch (imageError) {
           console.warn("Фото не найдено:", imageError);
@@ -113,7 +117,7 @@ function App() {
         }
   
         // Получаем комментарии
-        const commentsResponse = await axios.get(`${backendUrl}/comments/${formattedId}`);
+        const commentsResponse = await axios.get(`${backendUrl}/comments/${formattedId}`, {headers: {'ngrok-skip-browser-warning': '69420'}});
         const commentsData = commentsResponse.data;
   
         // Устанавливаем данные платформы (с фото или без)
@@ -144,7 +148,7 @@ function App() {
 
     try {
       const response = await axios.post(
-        `${backendUrl}/comments/${selectedPlatform.id}`, // Используем правильный эндпоинт
+        `${backendUrl}/comments/${selectedPlatform.id}`, {headers: {'ngrok-skip-browser-warning': '69420'}}, // Используем правильный эндпоинт
         { text: commentText } // Отправляем текст в теле запроса
       );
 
@@ -172,11 +176,12 @@ function App() {
       formData.append('file', renamedFile); // Используем переименованный файл
 
       const response = await axios.post(
-        `${backendUrl}/platform_photo/${selectedPlatform.id}`,
+        `${backendUrl}/platform_photo/${selectedPlatform.id}`, 
         formData,
         {
           headers: {
-            'Content-Type': 'multipart/form-data'
+            'Content-Type': 'multipart/form-data', 
+            'ngrok-skip-browser-warning': '69420'
           }
         }
       );

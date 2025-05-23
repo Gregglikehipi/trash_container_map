@@ -1,27 +1,4 @@
 services:
-  python-app:
-    container_name: python-app
-    build:
-      context: ./back
-      dockerfile: Dockerfile
-    restart: on-failure
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - capabilities: [ gpu ]
-    environment:
-      NVIDIA_VISIBLE_DEVICES: all
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    ports:
-      - "8000:8000"
-    volumes:
-      - ./back/app/photo:/code/app/photo
-      - ./back/app/data:/code/app/data
-    networks:
-      - app-network
-
   react-app:
     container_name: react-app
     build:
@@ -29,12 +6,8 @@ services:
       dockerfile: Dockerfile.react
     ports:
       - "3000:80"
-    depends_on:
-      - python-app
     networks:
       - app-network
-    links: 
-      - python-app
 
 networks:
   app-network:
