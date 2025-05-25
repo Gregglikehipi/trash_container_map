@@ -1,6 +1,5 @@
-from sqlalchemy import create_engine, Column, ForeignKey, Integer, Text, Float, String
+from sqlalchemy import create_engine, Column, ForeignKey, Integer, Text, Float, String, UniqueConstraint
 from sqlalchemy.orm import sessionmaker, declarative_base, relationship, Session, Mapped, mapped_column
-
 Base = declarative_base()
 
 class DatabaseHelper:
@@ -30,6 +29,7 @@ class PlatformDB(Base):
     latitude: Mapped[float] = mapped_column(Float)
     status: Mapped[str] = mapped_column(Text)
     change: Mapped[str] = mapped_column(Text)
+    ratings: Mapped[list["PlatformRatingDB"]] = relationship("PlatformRatingDB")
 
     comments: Mapped[list["PlatformCommentDB"]] = relationship(
         "PlatformCommentDB", 
@@ -47,4 +47,17 @@ class PlatformCommentDB(Base):
     platform: Mapped["PlatformDB"] = relationship(
         "PlatformDB", 
         back_populates="comments"
+    )
+
+class PlatformRatingDB(Base):
+    __tablename__ = 'platform_rating'
+    
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    platform_id: Mapped[int] = mapped_column(ForeignKey('platform.platform_id'))
+    user_token: Mapped[str] = mapped_column(String(64))  # Идентификатор пользователя
+    rating: Mapped[int] = mapped_column(Integer)  # Оценка от 1 до 5
+    timestamp: Mapped[int] = mapped_column(Integer)  # Время последнего изменения
+    
+    __table_args__ = (
+        UniqueConstraint('platform_id', 'user_token', name='_platform_user_uc'),
     )

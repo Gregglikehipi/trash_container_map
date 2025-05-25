@@ -1,6 +1,7 @@
 from app.sqlModels import *
 from datetime import datetime
 from collections import defaultdict
+from typing import List, Dict
 
 
 def create_platform(session, address, longitude, latitude):
@@ -70,3 +71,51 @@ def get_platforms_stats(db: Session):
         "yellow": stats.get("yellow", 0),
         "green": stats.get("green", 0)
     }
+
+def set_platform_rating(
+    db: Session,
+    platform_id: int,
+    user_token: str,
+    rating: int
+) -> PlatformRatingDB:
+    # Ищем существующую оценку
+    existing_rating = db.query(PlatformRatingDB).filter_by(
+        platform_id=platform_id,
+        user_token=user_token
+    ).first()
+
+    if existing_rating:
+        # Обновляем существующую оценку
+        existing_rating.rating = rating
+        existing_rating.timestamp = int(datetime.now().timestamp())
+    else:
+        # Создаём новую
+        existing_rating = PlatformRatingDB(
+            platform_id=platform_id,
+            user_token=user_token,
+            rating=rating,
+            timestamp=int(datetime.now().timestamp())
+        )
+        db.add(existing_rating)
+    
+    db.commit()
+    db.refresh(existing_rating)
+    return existing_rating
+
+def get_user_rating(db: Session, platform_id: int, user_token: str):
+    return db.query(PlatformRatingDB).filter_by(
+        platform_id=platform_id,
+        user_token=user_token
+    ).first()
+
+def get_average_rating(db: Session, platform_id: int):
+    ratings = db.query(PlatformRatingDB).filter_by(platform_id=platform_id).all()
+    if not ratings:
+        return None
+    return sum(r.rating for r in ratings) / len(ratings)
+
+def get_rating_distribution(ratings: List[PlatformRatingDB]) -> Dict[int, int]:
+    distribution = defaultdict(int)
+    for r in ratings:
+        distribution[r.rating] += 1
+    return dict(distribution)

@@ -1,13 +1,16 @@
-from fastapi import FastAPI, Depends, HTTPException, UploadFile, File
+from fastapi import FastAPI, Depends, HTTPException, UploadFile, File, Request, Header
 from fastapi.responses import FileResponse
-from typing import Union, Annotated
+from typing import Union, Annotated, List
 from sqlalchemy.orm import Session
-from app.sqlModels import db_helper, PlatformDB, PlatformCommentDB, Base
+from app.sqlModels import db_helper, PlatformDB, PlatformCommentDB, Base, PlatformRatingDB
 from app.pydanticModels import (
     AllPlatforms,
     PlatformCommentBase,
     PlatformResponse,
-    PlatformCommentResponse
+    PlatformCommentResponse,
+    RatingBase,
+    RatingResponse,
+    PlatformWithRatingResponse
 )
 import pandas as pd
 import os
@@ -18,6 +21,7 @@ import shutil
 import cv2
 import numpy as np
 from ultralytics import YOLO
+import hashlib
 
 
 from fastapi.middleware.cors import CORSMiddleware
@@ -51,15 +55,6 @@ def get_platforms(session: Session = Depends(db_helper.get_db)):
 def get_platform(session: Session = Depends(db_helper.get_db)):
     platforms = session.query(PlatformDB).limit(10).all()
     return AllPlatforms(platforms = platforms)
-
-
-@app.get("/platform_info/{id}", response_model=PlatformResponse)
-def read_platform_info(id: str, session: Session = Depends(db_helper.get_db)):
-    platform = session.get(PlatformDB, id)
-    if not platform:
-        raise HTTPException(status_code=404, detail="Площадка не найдена")
-    return platform
-
 
 @app.get("/platform_photo/{platform_id}")
 def read_platform_photo(platform_id: str):
@@ -143,3 +138,52 @@ def filter_platforms(
 @app.get("/platforms/stats")
 def get_platform_stats(db: Session = Depends(db_helper.get_db)):
     return get_platforms_stats(db)
+
+
+@app.post("/ratings/{platform_id}", response_model=RatingResponse)
+async def rate_platform(
+    platform_id: int,
+    rating_data: RatingBase,
+    request: Request,
+    x_user_token: str = Header(None),
+    db: Session = Depends(db_helper.get_db)
+):
+    user_token = get_user_token(request, x_user_token)
+    rating = set_platform_rating(db, platform_id, user_token, rating_data.rating)
+    return rating
+
+@app.get("/platform_info/{id}", response_model=PlatformWithRatingResponse)
+async def read_platform_info(
+    id: str,
+    request: Request,
+    x_user_token: str = Header(None),
+    db: Session = Depends(db_helper.get_db)
+):
+    platform = db.get(PlatformDB, id)
+    if not platform:
+        raise HTTPException(status_code=404, detail="Площадка не найдена")
+    
+    user_token = get_user_token(request, x_user_token)
+    user_rating = get_user_rating(db, id, user_token)
+    avg_rating = get_average_rating(db, id)
+
+    ratings = db.query(PlatformRatingDB).filter_by(platform_id=id).all()
+    ratings_count = len(ratings)
+    rating_distribution = get_rating_distribution(ratings) 
+    
+    return {
+        **platform.__dict__,
+        "average_rating": avg_rating,
+        "user_rating": user_rating.rating if user_rating else None,
+        "ratings_count": ratings_count,
+        "rating_distribution": rating_distribution
+    }
+
+def get_user_token(request: Request, x_user_token: str = None) -> str:
+    ip = request.client.host or "127.0.0.1"
+    user_agent = request.headers.get("user-agent", "")
+    
+    if x_user_token:  # Если есть токен из localStorage
+        return f"user-{hashlib.sha256(f'{ip}-{user_agent}-{x_user_token}'.encode()).hexdigest()}"
+    else:  # Fallback на IP + User-Agent
+        return f"ip-{hashlib.sha256(f'{ip}-{user_agent}'.encode()).hexdigest()}"

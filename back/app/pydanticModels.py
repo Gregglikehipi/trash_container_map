@@ -1,6 +1,7 @@
 from datetime import datetime
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional, Dict
+from pydantic import Field
 
 class PlatformBase(BaseModel):
     class Config:
@@ -33,3 +34,17 @@ class PlatformCommentResponse(PlatformCommentBase):
 
     class Config:
         from_attributes = True
+
+class RatingBase(BaseModel):
+    rating: int = Field(ge=1, le=5)  
+
+class RatingResponse(RatingBase):
+    platform_id: int
+    user_token: str
+    timestamp: datetime
+
+class PlatformWithRatingResponse(PlatformResponse):
+    average_rating: Optional[float]
+    user_rating: Optional[int]
+    ratings_count: int
+    rating_distribution: Dict[int, int]
