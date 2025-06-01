@@ -309,7 +309,7 @@ function App() {
               {photos.length > 0 ? (
                 <div style={{ position: 'relative', width: '100%' }}>
                   <img
-                    src={`${backendUrl}${photos[currentPhotoIndex].url}`}
+                    src={`${backendUrl}/platform_photos/${photos[currentPhotoIndex].filename}`}
                     alt={`Фото ${currentPhotoIndex + 1}`}
                     style={{ maxWidth: '100%', marginTop: '16px' }}
                   />
