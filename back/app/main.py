@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Depends, HTTPException, UploadFile, File, Request, Header
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 from typing import Union, Annotated, List
 from sqlalchemy.orm import Session
 from app.sqlModels import db_helper, PlatformDB, PlatformCommentDB, Base, PlatformRatingDB
@@ -14,6 +14,7 @@ from app.pydanticModels import (
 )
 import pandas as pd
 import os
+import uuid
 from datetime import datetime
 from collections import defaultdict
 from app.crud import *
@@ -59,19 +60,46 @@ def get_platform(session: Session = Depends(db_helper.get_db)):
 @app.get("/platform_photo/{platform_id}")
 def read_platform_photo(platform_id: str):
     photo_dir = "app/photo"
-    platform_prefix = platform_id
-
+    photos = []
+    
     for filename in os.listdir(photo_dir):
-        if filename.startswith(f"{platform_prefix}") and filename.endswith(".jpg"):
+        if filename.startswith(f"{platform_id}_") and filename.lower().endswith(('.png', '.jpg', '.jpeg')):
             file_path = os.path.join(photo_dir, filename)
-            return FileResponse(file_path)
+            photos.append({
+                "filename": filename,
+                "url": f"/platform_photo/file/{filename}", 
+                "created_at": datetime.fromtimestamp(os.path.getctime(file_path)).isoformat()
+            })
+    
+    photos.sort(key=lambda x: x["created_at"], reverse=True)
+    
+    if not photos:
+        raise HTTPException(status_code=404, detail="No photos found for this platform")
+    
+    return JSONResponse(content={
+        "platform_id": platform_id,
+        "photo_count": len(photos),
+        "photos": photos
+    })
 
-    raise HTTPException(status_code=404, detail="Photo not found")
+@app.get("/platform_photos/{filename}")
+def get_platform_photo(filename: str):
+    file_path = os.path.join(UPLOAD_DIR, filename)
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail="Photo not found")
+    return FileResponse(file_path)
 
 @app.post("/platform_photo/{platform_id}")
 def save_platform_photo(session: Annotated[Session, Depends(db_helper.get_db)],
-                        platform_id: str, file: UploadFile = File(...), ):
-    file_path = os.path.join(UPLOAD_DIR, f"{platform_id}.jpg")
+                        platform_id: str, 
+                        file: UploadFile = File(...), ):
+    
+    unique_id = str(uuid.uuid4())[:8] 
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    file_extension = os.path.splitext(file.filename)[1] or ".jpg"
+    filename = f"{platform_id}_{timestamp}_{unique_id}{file_extension}"
+    
+    file_path = os.path.join(UPLOAD_DIR, filename)
 
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
@@ -105,8 +133,6 @@ def save_platform_photo(session: Annotated[Session, Depends(db_helper.get_db)],
     if full_count == 0 and empty_count > 0:
         update_platform(session, int(platform_id), "green", datetime.today().strftime('%d-%m-%Y'))
         print("green")
-
-
 
     return {"filename": file.filename, "saved_to": file_path}
 
