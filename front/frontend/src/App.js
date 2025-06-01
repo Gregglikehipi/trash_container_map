@@ -46,6 +46,7 @@ function App() {
   const [filterStatus, setFilterStatus] = useState(null); // null — показать все
   const [stats, setStats] = useState({ green: 0, yellow: 0, red: 0 });
   const [file, setFile] = useState(null);
+  const [rating, setRating] = useState(null);
 
   const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8000';
   const renameFile = (file, platformId) => {
@@ -121,6 +122,10 @@ function App() {
           ...platform,
           id: formattedId,
           image: imageUrl, // может быть null
+          average_rating: platform.average_rating,
+          user_rating: platform.user_rating,
+          ratings_count: platform.ratings_count,
+          rating_distribution: platform.rating_distribution
         });
   
         setComments(commentsData);
@@ -133,6 +138,55 @@ function App() {
       alert('Ошибка при загрузке деталей');
     }
   };
+
+  const RatingStars = ({ currentRating, onRate, ratingDistribution }) => {
+  const [hoveredRating, setHoveredRating] = useState(0);
+
+  return (
+    <div style={{ display: 'flex', gap: '4px', cursor: 'pointer' }}>
+      {[1, 2, 3, 4, 5].map((star) => {
+        // Получаем количество оценок, если нет — ставим 0
+        const count = ratingDistribution?.[star] || 0;
+        const isFilled = star <= (hoveredRating || currentRating);
+
+        return (
+          <div key={star} style={{ position: 'relative' }}>
+            <span
+              onClick={() => onRate(star)}
+              onMouseEnter={() => setHoveredRating(star)}
+              onMouseLeave={() => setHoveredRating(0)}
+              style={{
+                fontSize: '20px',
+                color: isFilled ? 'gold' : 'gray'
+              }}
+            >
+              ★
+            </span>
+            {/* Tooltip */}
+            <div
+              style={{
+                visibility: hoveredRating === star ? 'visible' : 'hidden',
+                position: 'absolute',
+                bottom: '25px',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                backgroundColor: '#333',
+                color: '#fff',
+                padding: '4px 8px',
+                borderRadius: '4px',
+                whiteSpace: 'nowrap',
+                fontSize: '12px',
+                zIndex: 10
+              }}
+            >
+              Оценили: {count}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+};
 
   const handleSubmitComment = async (event) => {
     event.preventDefault();
@@ -194,6 +248,22 @@ function App() {
     }
   };
 
+  const handleSubmitRating = async (newRating) => {
+    try {
+      const response = await axios.post(
+        `${backendUrl}/ratings/${selectedPlatform.id}`,
+        { rating: newRating }
+      );
+
+      // Обновляем данные платформы, чтобы показать новый рейтинг
+      loadDetails(selectedPlatform.id); // Перезагружаем детали
+      alert('Рейтинг успешно обновлен!');
+    } catch (error) {
+      console.error("Ошибка при отправке рейтинга:", error);
+      alert('Не удалось установить рейтинг');
+    }
+  };
+
   const formatId = (id) => {
     return String(id).padStart(8, '0'); // делаем строкой и дополняем до 8 знаков нулями слева
   };
@@ -248,6 +318,22 @@ function App() {
               <h2>{selectedPlatform.address}</h2>
               <p><strong>Адрес:</strong> {selectedPlatform.address}</p>
               <p><strong>Координаты:</strong> ({selectedPlatform.latitude}, {selectedPlatform.longitude})</p>
+              {selectedPlatform && (
+                <div style={{ marginTop: '16px' }}>
+                  <h4>Оцените мусорку</h4>
+                  <RatingStars
+                    currentRating={selectedPlatform.user_rating || 0}
+                    ratingDistribution={selectedPlatform.rating_distribution}
+                    onRate={handleSubmitRating}
+                  />
+                  <p style={{ marginTop: '8px', fontStyle: 'italic', color: '#666' }}>
+                    Средний рейтинг: {selectedPlatform.average_rating?.toFixed(1) || 'Нет оценок'}
+                  </p>
+                  <p style={{ fontStyle: 'italic', color: '#999', fontSize: '12px' }}>
+                    Всего оценок: {selectedPlatform.ratings_count || 0}
+                  </p>
+                </div>
+              )}
               {/* Отображение изображения */}
               {selectedPlatform.image && (
                 <img
