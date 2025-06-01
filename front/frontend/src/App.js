@@ -3,7 +3,6 @@ import { MapContainer, TileLayer, Marker } from 'react-leaflet';
 import axios from 'axios';
 import L from 'leaflet'; 
 import MarkerClusterGroup from 'react-leaflet-markercluster'; 
-
 import 'leaflet/dist/leaflet.css';
 import 'leaflet.markercluster/dist/MarkerCluster.css';
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
@@ -41,12 +40,14 @@ function App() {
   const [platforms, setPlatforms] = useState([]); 
   const [selectedPlatform, setSelectedPlatform] = useState(null); 
   const [isPanelVisible, setIsPanelVisible] = useState(true);
-  const [comments, setComments] = useState([]); // Новое состояние для комментариев
-  const [commentText, setCommentText] = useState(''); // Новое состояние для текста комментария
-  const [filterStatus, setFilterStatus] = useState(null); // null — показать все
+  const [comments, setComments] = useState([]); 
+  const [commentText, setCommentText] = useState(''); 
+  const [filterStatus, setFilterStatus] = useState(null); 
   const [stats, setStats] = useState({ green: 0, yellow: 0, red: 0 });
   const [file, setFile] = useState(null);
   const [rating, setRating] = useState(null);
+  const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
+  const [photos, setPhotos] = useState([]);
 
   const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8000';
   const renameFile = (file, platformId) => {
@@ -89,28 +90,27 @@ function App() {
 
   const loadDetails = async (id) => {
     try {
-      //const formattedId = formatId(id); // форматируем ID
       const formattedId = id; // форматируем ID
   
       // Загружаем основную информацию о платформе
       const response = await axios.get(`${backendUrl}/platform_info/${formattedId}`, {
         params: { item_id: formattedId }
       });
-  
       const platform = response.data;
   
       if (platform) {
         let imageUrl = null;
+        let photosData = [];
   
-        // Пытаемся загрузить фото, но не падаем, если его нет
+        // Получаем список фото
         try {
-          const imageResponse = await axios.get(`${backendUrl}/platform_photo/${formattedId}`, {
-            responseType: 'blob'
-          });
-          imageUrl = URL.createObjectURL(imageResponse.data);
+          const photoResponse = await axios.get(`${backendUrl}/platform_photo/${formattedId}`);
+          photosData = photoResponse.data.photos || [];
+          if (photosData.length > 0) {
+            imageUrl = photosData[0].url; // первое фото
+          }
         } catch (imageError) {
           console.warn("Фото не найдено:", imageError);
-          // Если фото не найдено — просто продолжаем без него
         }
   
         // Получаем комментарии
@@ -121,13 +121,14 @@ function App() {
         setSelectedPlatform({
           ...platform,
           id: formattedId,
-          image: imageUrl, // может быть null
           average_rating: platform.average_rating,
           user_rating: platform.user_rating,
           ratings_count: platform.ratings_count,
-          rating_distribution: platform.rating_distribution
+          rating_distribution: platform.rating_distribution,
         });
   
+        setPhotos(photosData);
+        setCurrentPhotoIndex(0); // показываем первое фото
         setComments(commentsData);
         setIsPanelVisible(true);
       } else {
@@ -318,6 +319,56 @@ function App() {
               <h2>{selectedPlatform.address}</h2>
               <p><strong>Адрес:</strong> {selectedPlatform.address}</p>
               <p><strong>Координаты:</strong> ({selectedPlatform.latitude}, {selectedPlatform.longitude})</p>
+              {/* Галерея фото */}
+              {photos.length > 0 ? (
+                <div style={{ position: 'relative', width: '100%' }}>
+                  <img
+                    src={`${backendUrl}${photos[currentPhotoIndex].url}`}
+                    alt={`Фото ${currentPhotoIndex + 1}`}
+                    style={{ maxWidth: '100%', marginTop: '16px' }}
+                  />
+                  <p style={{ fontStyle: 'italic', color: '#666', marginTop: '8px' }}>
+                    Дата загрузки: {new Date(photos[currentPhotoIndex].created_at).toLocaleString()}
+                  </p>
+
+                  {/* Навигация */}
+                  <button
+                    onClick={() => setCurrentPhotoIndex(prev => Math.max(0, prev - 1))}
+                    disabled={currentPhotoIndex === 0}
+                    style={{
+                      position: 'absolute',
+                      left: '-40px',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      background: '#fff',
+                      border: '1px solid #ccc',
+                      padding: '8px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    ←
+                  </button>
+                  <button
+                    onClick={() => setCurrentPhotoIndex(prev => Math.min(photos.length - 1, prev + 1))}
+                    disabled={currentPhotoIndex === photos.length - 1}
+                    style={{
+                      position: 'absolute',
+                      right: '-40px',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      background: '#fff',
+                      border: '1px solid #ccc',
+                      padding: '8px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    →
+                  </button>
+                </div>
+              ) : (
+                <p style={{ fontStyle: 'italic', color: '#999' }}>Нет загруженных фото</p>
+              )}
+
               {selectedPlatform && (
                 <div style={{ marginTop: '16px' }}>
                   <h4>Оцените мусорку</h4>
@@ -333,14 +384,6 @@ function App() {
                     Всего оценок: {selectedPlatform.ratings_count || 0}
                   </p>
                 </div>
-              )}
-              {/* Отображение изображения */}
-              {selectedPlatform.image && (
-                <img
-                  src={selectedPlatform.image}
-                  alt={selectedPlatform.address}
-                  style={{ maxWidth: '100%', marginTop: '16px' }}
-                />
               )}
               {/* Отображение даты изменения */}
               {selectedPlatform.change !== "-" && (
@@ -436,13 +479,36 @@ function App() {
               <div style={{ marginTop: '20px' }}>
                 <h3>Загрузить фото мусорки</h3>
                 <form onSubmit={handleSubmitPhoto}>
+                  <label htmlFor="fileInput" style={{
+                    display: 'inline-block',
+                    padding: '10px 15px',
+                    background: '#007bff',
+                    color: 'white',
+                    borderRadius: '6px',
+                    cursor: 'pointer'
+                  }}>Выбрать файл</label>
                   <input
+                    id="fileInput"
                     type="file"
                     accept="image/*"
                     onChange={(e) => setFile(e.target.files[0])}
                     required
+                    style={{ display: 'none' }}
                   />
-                  <button type="submit" disabled={!file}>
+                  {file && <span style={{ marginLeft: '8px', color: '#666' }}>{file.name}</span>}
+                  <button
+                    type="submit"
+                    disabled={!file}
+                    style={{
+                      marginTop: '8px',
+                      padding: '10px 15px',
+                      background: 'linear-gradient(to right, #007bff, #0056b3)',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '6px',
+                      cursor: 'pointer'
+                    }}
+                  >
                     Загрузить
                   </button>
                 </form>
