@@ -90,50 +90,41 @@ function App() {
 
   const loadDetails = async (id) => {
     try {
-      const formattedId = id; // форматируем ID
-  
-      // Загружаем основную информацию о платформе
+      const formattedId = id;
+
+      // Получаем детали платформы
       const response = await axios.get(`${backendUrl}/platform_info/${formattedId}`, {
         params: { item_id: formattedId }
       });
+
       const platform = response.data;
-  
-      if (platform) {
-        let imageUrl = null;
-        let photosData = [];
-  
-        // Получаем список фото
-        try {
-          const photoResponse = await axios.get(`${backendUrl}/platform_photo/${formattedId}`);
-          photosData = photoResponse.data.photos || [];
-          if (photosData.length > 0) {
-            imageUrl = photosData[0].url; // первое фото
-          }
-        } catch (imageError) {
-          console.warn("Фото не найдено:", imageError);
-        }
-  
-        // Получаем комментарии
-        const commentsResponse = await axios.get(`${backendUrl}/comments/${formattedId}`);
-        const commentsData = commentsResponse.data;
-  
-        // Устанавливаем данные платформы (с фото или без)
-        setSelectedPlatform({
-          ...platform,
-          id: formattedId,
-          average_rating: platform.average_rating,
-          user_rating: platform.user_rating,
-          ratings_count: platform.ratings_count,
-          rating_distribution: platform.rating_distribution,
-        });
-  
-        setPhotos(photosData);
-        setCurrentPhotoIndex(0); // показываем первое фото
-        setComments(commentsData);
-        setIsPanelVisible(true);
-      } else {
-        alert('Детали не найдены');
+
+      // Получаем фото
+      let photosData = [];
+      try {
+        const photoResponse = await axios.get(`${backendUrl}/platform_photo/${formattedId}`);
+        photosData = photoResponse.data.photos || [];
+      } catch (photoError) {
+        console.warn("Фото не найдены", photoError);
       }
+
+      // Получаем комментарии
+      const commentsResponse = await axios.get(`${backendUrl}/comments/${formattedId}`);
+      const commentsData = commentsResponse.data;
+
+      setSelectedPlatform({
+        ...platform,
+        id: formattedId,
+        average_rating: platform.average_rating,
+        user_rating: platform.user_rating,
+        ratings_count: platform.ratings_count,
+        rating_distribution: platform.rating_distribution,
+      });
+
+      setPhotos(photosData);
+      setCurrentPhotoIndex(0);
+      setComments(commentsData);
+      setIsPanelVisible(true);
     } catch (error) {
       console.error("Ошибка при загрузке деталей:", error);
       alert('Ошибка при загрузке деталей');
@@ -226,21 +217,16 @@ function App() {
       const formData = new FormData();
       formData.append('file', renamedFile); // Используем переименованный файл
 
-      const response = await axios.post(
-        `${backendUrl}/platform_photo/${selectedPlatform.id}`,
-        formData,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data'
-          }
-        }
-      );
+      await axios.post(`${backendUrl}/platform_photo/${selectedPlatform.id}`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      
+      
 
       // После успешной загрузки, обновляем URL фото
-      setSelectedPlatform((prev) => ({
-        ...prev,
-        image: `${backendUrl}/platform_photo/${selectedPlatform.id}`
-      }));
+      const photoResponse = await axios.get(`${backendUrl}/platform_photo/${selectedPlatform.id}`);
+      setPhotos(photoResponse.data.photos || []);
+      setCurrentPhotoIndex(0);
 
       alert('Фото успешно загружено!');
     } catch (error) {
@@ -331,9 +317,9 @@ function App() {
                     Дата загрузки: {new Date(photos[currentPhotoIndex].created_at).toLocaleString()}
                   </p>
 
-                  {/* Навигация */}
+                  {/* Кнопки навигации */}
                   <button
-                    onClick={() => setCurrentPhotoIndex(prev => Math.max(0, prev - 1))}
+                    onClick={() => setCurrentPhotoIndex((prev) => Math.max(0, prev - 1))}
                     disabled={currentPhotoIndex === 0}
                     style={{
                       position: 'absolute',
@@ -349,7 +335,7 @@ function App() {
                     ←
                   </button>
                   <button
-                    onClick={() => setCurrentPhotoIndex(prev => Math.min(photos.length - 1, prev + 1))}
+                    onClick={() => setCurrentPhotoIndex((prev) => Math.min(photos.length - 1, prev + 1))}
                     disabled={currentPhotoIndex === photos.length - 1}
                     style={{
                       position: 'absolute',
